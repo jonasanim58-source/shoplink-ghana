@@ -1,8 +1,387 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ShopLink Shop</title><link rel="stylesheet" href="/styles.css"></head><body><header><div class="wrap nav"><a class="logo" href="/">ShopLink Ghana</a><a class="btn small" href="/seller">Create a shop</a></div></header><main class="wrap shop-page"><div id="head"></div><div class="search-row"><input id="search" placeholder="Search products…"><span id="count"></span></div><div id="grid" class="products"></div></main><div id="cart" class="cart hidden"><span><b id="cc">0</b> items · <b id="total">GH₵0.00</b></span><button class="btn small" onclick="checkout()">Order on WhatsApp</button></div><script>
-let business,products=[],cart=[];const slug=location.pathname.split("/").filter(Boolean).pop();
-async function init(){let r=await fetch("/api/business/"+slug);if(!r.ok){document.body.innerHTML="<main class='wrap'><h1>Shop not found</h1></main>";return}let d=await r.json();business=d.business;products=d.products;document.title=business.name+" — ShopLink Ghana";head.innerHTML="<span class='pill'>ONLINE SHOP</span><h1>"+e(business.name)+"</h1><p>"+e(business.description)+"</p><p class='muted'>📍 "+e(business.location)+" · 🕐 "+e(business.hours)+"</p>";render()}
-function render(){let q=search.value.toLowerCase(),a=products.filter(p=>(p.name+" "+p.description).toLowerCase().includes(q));count.textContent=a.length+" products";grid.innerHTML=a.map(p=>"<article class='product'><img src='"+p.image+"' alt='"+e(p.name)+"'><div><h3>"+e(p.name)+"</h3><p>"+e(p.description)+"</p><strong>GH₵"+Number(p.price).toFixed(2)+"</strong><button class='btn full' onclick="add('"+p.id+"')">Add to order</button></div></article>").join("")||"<p>No products found.</p>"}
-function add(id){let x=cart.find(a=>a.id===id);x?x.qty++:cart.push({id,qty:1});update()}function update(){let n=cart.reduce((a,x)=>a+x.qty,0),t=cart.reduce((a,x)=>a+x.qty*products.find(p=>p.id===x.id).price,0);cc.textContent=n;total.textContent="GH₵"+t.toFixed(2);cartBar.classList.toggle("hidden",!n)}
-function checkout(){let name=prompt("Your name:");if(!name)return;let loc=prompt("Delivery/pickup location:")||"Not provided",m="Hello "+business.name+"! I want to order:%0A%0A",t=0;cart.forEach(x=>{let p=products.find(p=>p.id===x.id);t+=p.price*x.qty;m+=encodeURIComponent(p.name)+" x "+x.qty+" = GH₵"+(p.price*x.qty).toFixed(2)+"%0A"});m+="%0ATotal: GH₵"+t.toFixed(2)+"%0AName: "+encodeURIComponent(name)+"%0ALocation: "+encodeURIComponent(loc);location.href="https://wa.me/"+business.whatsapp+"?text="+m}
-function e(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}search.oninput=render;init();
-</script></body></html>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShopLink Shop</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="/">ShopLink Ghana</a>
+    <a class="btn small" href="/seller">Create a shop</a>
+  </div>
+</header>
+
+<main class="wrap shop-page">
+
+  <div id="head"></div>
+
+  <div class="search-row">
+    <input id="search" placeholder="Search products…">
+    <span id="count"></span>
+  </div>
+
+  <div id="grid" class="products"></div>
+
+</main>
+
+<div id="cart" class="cart hidden">
+  <span>
+    <b id="cc">0</b> items ·
+    <b id="total">GH₵0.00</b>
+  </span>
+
+  <button class="btn small" id="checkoutBtn">
+    Order on WhatsApp
+  </button>
+</div>
+
+<script>
+
+let business = null;
+let products = [];
+let cartItems = [];
+
+const slug = location.pathname
+  .split("/")
+  .filter(Boolean)
+  .pop();
+
+const head = document.getElementById("head");
+const search = document.getElementById("search");
+const count = document.getElementById("count");
+const grid = document.getElementById("grid");
+const cartBar = document.getElementById("cart");
+const cartCount = document.getElementById("cc");
+const cartTotal = document.getElementById("total");
+const checkoutBtn = document.getElementById("checkoutBtn");
+
+
+async function init() {
+
+  try {
+
+    const response =
+      await fetch("/api/business/" + encodeURIComponent(slug));
+
+    if (!response.ok) {
+
+      document.body.innerHTML = `
+        <main class="wrap">
+          <h1>Shop not found</h1>
+          <p>The shop link may be incorrect.</p>
+          <a class="btn" href="/">Back to ShopLink Ghana</a>
+        </main>
+      `;
+
+      return;
+    }
+
+    const data = await response.json();
+
+    business = data.business;
+    products = data.products || [];
+
+    document.title =
+      business.name + " — ShopLink Ghana";
+
+    head.innerHTML = `
+      <span class="pill">ONLINE SHOP</span>
+
+      <h1>${escapeHtml(business.name)}</h1>
+
+      <p>
+        ${escapeHtml(business.description)}
+      </p>
+
+      <p class="muted">
+        📍 ${escapeHtml(business.location)}
+        ·
+        🕐 ${escapeHtml(business.hours)}
+      </p>
+    `;
+
+    render();
+
+  } catch (error) {
+
+    console.error(error);
+
+    document.body.innerHTML = `
+      <main class="wrap">
+        <h1>Unable to load shop</h1>
+        <p>Please refresh the page and try again.</p>
+      </main>
+    `;
+
+  }
+
+}
+
+
+function render() {
+
+  const query =
+    search.value.toLowerCase().trim();
+
+  const filtered =
+    products.filter(function(product) {
+
+      return (
+        product.name +
+        " " +
+        product.description
+      )
+      .toLowerCase()
+      .includes(query);
+
+    });
+
+  count.textContent =
+    filtered.length + " products";
+
+  if (!filtered.length) {
+
+    grid.innerHTML =
+      "<p>No products found.</p>";
+
+    return;
+  }
+
+  grid.innerHTML =
+    filtered.map(function(product) {
+
+      return `
+        <article class="product">
+
+          <img
+            src="${escapeAttribute(product.image)}"
+            alt="${escapeAttribute(product.name)}"
+            loading="lazy"
+          >
+
+          <div>
+
+            <h3>
+              ${escapeHtml(product.name)}
+            </h3>
+
+            <p>
+              ${escapeHtml(product.description)}
+            </p>
+
+            <strong>
+              GH₵${Number(product.price).toFixed(2)}
+            </strong>
+
+            <button
+              class="btn full"
+              type="button"
+              data-product-id="${escapeAttribute(product.id)}"
+            >
+              Add to order
+            </button>
+
+          </div>
+
+        </article>
+      `;
+
+    }).join("");
+
+  document
+    .querySelectorAll("[data-product-id]")
+    .forEach(function(button) {
+
+      button.addEventListener("click", function() {
+
+        add(button.dataset.productId);
+
+      });
+
+    });
+
+}
+
+
+function add(id) {
+
+  const existing =
+    cartItems.find(function(item) {
+
+      return item.id === id;
+
+    });
+
+  if (existing) {
+
+    existing.qty++;
+
+  } else {
+
+    cartItems.push({
+      id: id,
+      qty: 1
+    });
+
+  }
+
+  updateCart();
+
+}
+
+
+function updateCart() {
+
+  let itemCount = 0;
+  let totalPrice = 0;
+
+  cartItems.forEach(function(item) {
+
+    const product =
+      products.find(function(p) {
+
+        return p.id === item.id;
+
+      });
+
+    if (!product) return;
+
+    itemCount += item.qty;
+
+    totalPrice +=
+      item.qty * Number(product.price);
+
+  });
+
+  cartCount.textContent = itemCount;
+
+  cartTotal.textContent =
+    "GH₵" + totalPrice.toFixed(2);
+
+  cartBar.classList.toggle(
+    "hidden",
+    itemCount === 0
+  );
+
+}
+
+
+function checkout() {
+
+  if (!business || !cartItems.length) {
+
+    alert("Please add a product first.");
+
+    return;
+
+  }
+
+  const customerName =
+    prompt("Your name:");
+
+  if (!customerName) return;
+
+  const deliveryLocation =
+    prompt("Delivery/pickup location:") ||
+    "Not provided";
+
+  let message =
+    "Hello " +
+    business.name +
+    "! I want to order:\n\n";
+
+  let total = 0;
+
+  cartItems.forEach(function(item) {
+
+    const product =
+      products.find(function(p) {
+
+        return p.id === item.id;
+
+      });
+
+    if (!product) return;
+
+    const subtotal =
+      Number(product.price) * item.qty;
+
+    total += subtotal;
+
+    message +=
+      product.name +
+      " x " +
+      item.qty +
+      " = GH₵" +
+      subtotal.toFixed(2) +
+      "\n";
+
+  });
+
+  message +=
+    "\nTotal: GH₵" +
+    total.toFixed(2);
+
+  message +=
+    "\nName: " +
+    customerName;
+
+  message +=
+    "\nLocation: " +
+    deliveryLocation;
+
+  const whatsappNumber =
+    String(business.whatsapp)
+      .replace(/\D/g, "");
+
+  const whatsappUrl =
+    "https://wa.me/" +
+    whatsappNumber +
+    "?text=" +
+    encodeURIComponent(message);
+
+  window.location.href = whatsappUrl;
+
+}
+
+
+function escapeHtml(value) {
+
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value) {
+
+  return escapeHtml(value);
+
+}
+
+
+search.addEventListener(
+  "input",
+  render
+);
+
+checkoutBtn.addEventListener(
+  "click",
+  checkout
+);
+
+init();
+
+</script>
+
+</body>
+</html>
