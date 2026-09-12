@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <title>Seller Dashboard — ShopLink Ghana</title>
 
   <style>
@@ -14,7 +15,7 @@
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f5f7fb;
-      color: #222;
+      color: #111827;
     }
 
     header {
@@ -41,7 +42,7 @@
       border-radius: 14px;
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+      box-shadow: 0 3px 15px rgba(0,0,0,.08);
     }
 
     h2 {
@@ -81,8 +82,9 @@
       color: white;
     }
 
-    button:hover {
-      opacity: 0.9;
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
     }
 
     .secondary {
@@ -99,15 +101,14 @@
 
     .danger-button {
       width: 100%;
-      margin-top: 30px;
-      padding: 15px 20px;
+      margin-top: 25px;
+      padding: 16px;
       background: #dc2626;
       color: white;
       border: 2px solid #991b1b;
       border-radius: 10px;
       font-size: 16px;
       font-weight: 800;
-      cursor: pointer;
       box-shadow: 0 4px 0 #991b1b;
     }
 
@@ -136,12 +137,25 @@
       color: #991b1b;
     }
 
+    .success-box {
+      background: #dcfce7;
+      color: #166534;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
     .shop-link {
       word-break: break-all;
       background: #f3f4f6;
       padding: 12px;
       border-radius: 8px;
       margin-top: 10px;
+    }
+
+    .small {
+      font-size: 14px;
+      color: #6b7280;
     }
 
     .product {
@@ -188,19 +202,6 @@
     .delete {
       background: #dc2626;
     }
-
-    .small {
-      font-size: 14px;
-      color: #6b7280;
-    }
-
-    .success-box {
-      background: #dcfce7;
-      color: #166534;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 15px;
-    }
   </style>
 </head>
 
@@ -212,99 +213,151 @@
 
 <div class="container">
 
-  <!-- LOGIN / CREATE SHOP -->
+  <!-- LOGIN / CREATE -->
+
   <div id="authSection">
 
     <div class="card">
+
       <h2>Seller Login</h2>
 
-      <label for="loginSlug">Shop name / slug</label>
+      <label for="loginSlug">
+        Shop slug
+      </label>
+
       <input
         id="loginSlug"
         type="text"
-        placeholder="example: accra-style-hub"
+        placeholder="accra-style-hub"
+        autocomplete="username"
       >
 
-      <label for="loginPassword">Password</label>
+      <label for="loginPassword">
+        Password
+      </label>
+
       <input
         id="loginPassword"
         type="password"
         placeholder="Enter your password"
+        autocomplete="current-password"
       >
 
-      <button id="loginBtn" class="secondary">
+      <button
+        id="loginBtn"
+        class="secondary"
+        type="button"
+      >
         Login
       </button>
 
       <div id="loginMessage"></div>
+
     </div>
 
+
     <div class="card">
+
       <h2>Create a New Shop</h2>
 
-      <label for="createName">Business name</label>
+      <label for="createName">
+        Business name
+      </label>
+
       <input
         id="createName"
         type="text"
         placeholder="Accra Style Hub"
       >
 
-      <label for="createWhatsapp">WhatsApp number</label>
+      <label for="createWhatsapp">
+        WhatsApp number
+      </label>
+
       <input
         id="createWhatsapp"
         type="text"
         placeholder="233XXXXXXXXX"
       >
 
-      <label for="createLocation">Location</label>
+      <label for="createLocation">
+        Location
+      </label>
+
       <input
         id="createLocation"
         type="text"
         placeholder="Accra, Ghana"
       >
 
-      <label for="createHours">Opening hours</label>
+      <label for="createHours">
+        Opening hours
+      </label>
+
       <input
         id="createHours"
         type="text"
         placeholder="Mon-Sat, 9 AM-7 PM"
       >
 
-      <label for="createDescription">Description</label>
+      <label for="createDescription">
+        Description
+      </label>
+
       <textarea
         id="createDescription"
         placeholder="Tell customers about your business"
       ></textarea>
 
-      <label for="createPassword">Password</label>
+      <label for="createPassword">
+        Password
+      </label>
+
       <input
         id="createPassword"
         type="password"
         placeholder="At least 6 characters"
+        autocomplete="new-password"
       >
 
-      <label for="confirmPassword">Confirm password</label>
+      <label for="confirmPassword">
+        Confirm password
+      </label>
+
       <input
         id="confirmPassword"
         type="password"
         placeholder="Enter password again"
+        autocomplete="new-password"
       >
 
-      <button id="createBtn" class="success">
+      <button
+        id="createBtn"
+        class="success"
+        type="button"
+      >
         Create Shop
       </button>
 
       <div id="createMessage"></div>
+
     </div>
 
   </div>
 
 
   <!-- DASHBOARD -->
-  <div id="dashboardSection" class="hidden">
+
+  <div
+    id="dashboardSection"
+    class="hidden"
+  >
 
     <div class="card">
-      <h2 id="businessName">Seller Dashboard</h2>
+
+      <h2 id="businessName">
+        Seller Dashboard
+      </h2>
 
       <p>
         <strong>Shop:</strong>
@@ -322,89 +375,140 @@
         <span id="shopUrl"></span>
       </div>
 
-      <button id="copyLinkBtn" class="secondary">
+      <button
+        id="copyLinkBtn"
+        class="secondary"
+        type="button"
+      >
         📋 Copy Shop Link
       </button>
-      
-      <button id="openShopBtn" class="success">
-  🛍️ Open My Shop
-</button>
 
-      <button id="logoutBtn" class="logout">
+      <button
+        id="openShopBtn"
+        class="success"
+        type="button"
+      >
+        🛍️ Open My Shop
+      </button>
+
+      <button
+        id="logoutBtn"
+        class="logout"
+        type="button"
+      >
         Logout
       </button>
+
     </div>
 
 
-    <!-- ADD PRODUCT -->
+    <!-- PRODUCT FORM -->
+
     <div class="card">
-      <h2 id="productFormTitle">Add Product</h2>
 
-      <input id="editingProductId" type="hidden">
+      <h2 id="productFormTitle">
+        Add Product
+      </h2>
 
-      <label for="productName">Product name</label>
+      <input
+        id="editingProductId"
+        type="hidden"
+      >
+
+      <label for="productName">
+        Product name
+      </label>
+
       <input
         id="productName"
         type="text"
-        placeholder="Samsung Galaxy A15"
+        placeholder="Premium Sneakers"
       >
 
-      <label for="productPrice">Price (GH₵)</label>
+      <label for="productPrice">
+        Price (GH₵)
+      </label>
+
       <input
         id="productPrice"
         type="number"
         min="0"
         step="0.01"
-        placeholder="2500"
+        placeholder="280"
       >
 
-      <label for="productImage">Image URL</label>
+      <label for="productImage">
+        Image URL
+      </label>
+
       <input
         id="productImage"
-        type="text"
+        type="url"
         placeholder="https://images.unsplash.com/..."
       >
 
-      <label for="productDescription">Description</label>
+      <label for="productDescription">
+        Description
+      </label>
+
       <textarea
         id="productDescription"
         placeholder="Describe your product"
       ></textarea>
 
-      <button id="saveProductBtn" class="success">
+      <button
+        id="saveProductBtn"
+        class="success"
+        type="button"
+      >
         Add Product
       </button>
 
-      <button id="cancelEditBtn" class="logout hidden">
+      <button
+        id="cancelEditBtn"
+        class="logout hidden"
+        type="button"
+      >
         Cancel Edit
       </button>
 
       <div id="productMessage"></div>
+
     </div>
 
 
     <!-- PRODUCTS -->
+
     <div class="card">
+
       <h2>Your Products</h2>
 
       <div id="productsList">
         Loading products...
       </div>
+
     </div>
 
 
-    <!-- DELETE SHOP -->
+    <!-- DANGER ZONE -->
+
     <div class="card">
+
       <h2>Danger Zone</h2>
 
       <p class="small">
-        Deleting your shop permanently removes the shop and all of its products.
-        This action cannot be undone.
+        Deleting your shop permanently removes the shop
+        and all of its products. This action cannot be undone.
       </p>
 
-      <button id="deleteShopBtn" type="button" class="danger-button">
+      <button
+        id="deleteShopBtn"
+        class="danger-button"
+        type="button"
+      >
         ⚠️ DELETE MY SHOP
       </button>
+
     </div>
 
   </div>
@@ -416,56 +520,115 @@
   let token = "";
   let currentBusiness = null;
 
-  const authSection = document.getElementById("authSection");
-  const dashboardSection = document.getElementById("dashboardSection");
+  const authSection =
+    document.getElementById("authSection");
 
-  const loginSlug = document.getElementById("loginSlug");
-  const loginPassword = document.getElementById("loginPassword");
-  const loginBtn = document.getElementById("loginBtn");
-  const loginMessage = document.getElementById("loginMessage");
-
-  const createName = document.getElementById("createName");
-  const createWhatsapp = document.getElementById("createWhatsapp");
-  const createLocation = document.getElementById("createLocation");
-  const createHours = document.getElementById("createHours");
-  const createDescription = document.getElementById("createDescription");
-  const createPassword = document.getElementById("createPassword");
-  const confirmPassword = document.getElementById("confirmPassword");
-  const createBtn = document.getElementById("createBtn");
-  const createMessage = document.getElementById("createMessage");
-
-  const businessName = document.getElementById("businessName");
-  const businessSlug = document.getElementById("businessSlug");
-  const businessWhatsapp = document.getElementById("businessWhatsapp");
-  const shopUrl = document.getElementById("shopUrl");
-
-  const copyLinkBtn = document.getElementById("copyLinkBtn");
-  const openShopBtn = document.getElementById("openShopBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-
-  const productFormTitle = document.getElementById("productFormTitle");
-  const editingProductId = document.getElementById("editingProductId");
-  const productName = document.getElementById("productName");
-  const productPrice = document.getElementById("productPrice");
-  const productImage = document.getElementById("productImage");
-  const productDescription = document.getElementById("productDescription");
-  const saveProductBtn = document.getElementById("saveProductBtn");
-  const cancelEditBtn = document.getElementById("cancelEditBtn");
-  const productMessage = document.getElementById("productMessage");
-  const productsList = document.getElementById("productsList");
-
-  const deleteShopBtn = document.getElementById("deleteShopBtn");
+  const dashboardSection =
+    document.getElementById("dashboardSection");
 
 
-  function showMessage(element, message, isError = false) {
-    element.innerHTML =
-      '<div class="message ' +
-      (isError ? "error" : "") +
-      '">' +
-      escapeHtml(message) +
-      "</div>";
-  }
+  const loginSlug =
+    document.getElementById("loginSlug");
 
+  const loginPassword =
+    document.getElementById("loginPassword");
+
+  const loginBtn =
+    document.getElementById("loginBtn");
+
+  const loginMessage =
+    document.getElementById("loginMessage");
+
+
+  const createName =
+    document.getElementById("createName");
+
+  const createWhatsapp =
+    document.getElementById("createWhatsapp");
+
+  const createLocation =
+    document.getElementById("createLocation");
+
+  const createHours =
+    document.getElementById("createHours");
+
+  const createDescription =
+    document.getElementById("createDescription");
+
+  const createPassword =
+    document.getElementById("createPassword");
+
+  const confirmPassword =
+    document.getElementById("confirmPassword");
+
+  const createBtn =
+    document.getElementById("createBtn");
+
+  const createMessage =
+    document.getElementById("createMessage");
+
+
+  const businessName =
+    document.getElementById("businessName");
+
+  const businessSlug =
+    document.getElementById("businessSlug");
+
+  const businessWhatsapp =
+    document.getElementById("businessWhatsapp");
+
+  const shopUrl =
+    document.getElementById("shopUrl");
+
+
+  const copyLinkBtn =
+    document.getElementById("copyLinkBtn");
+
+  const openShopBtn =
+    document.getElementById("openShopBtn");
+
+  const logoutBtn =
+    document.getElementById("logoutBtn");
+
+
+  const productFormTitle =
+    document.getElementById("productFormTitle");
+
+  const editingProductId =
+    document.getElementById("editingProductId");
+
+  const productName =
+    document.getElementById("productName");
+
+  const productPrice =
+    document.getElementById("productPrice");
+
+  const productImage =
+    document.getElementById("productImage");
+
+  const productDescription =
+    document.getElementById("productDescription");
+
+  const saveProductBtn =
+    document.getElementById("saveProductBtn");
+
+  const cancelEditBtn =
+    document.getElementById("cancelEditBtn");
+
+  const productMessage =
+    document.getElementById("productMessage");
+
+  const productsList =
+    document.getElementById("productsList");
+
+
+  const deleteShopBtn =
+    document.getElementById("deleteShopBtn");
+
+
+  /* -----------------------------
+     HELPERS
+  ----------------------------- */
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -477,92 +640,98 @@
   }
 
 
-  async function login() {
-  const slug = loginSlug.value.trim().toLowerCase();
-  const password = loginPassword.value;
-
-  loginMessage.innerHTML = "";
-
-  if (!slug || !password) {
-    showMessage(
-      loginMessage,
-      "Please enter your shop slug and password.",
-      true
-    );
-    return;
+  function showMessage(
+    element,
+    message,
+    isError = false
+  ) {
+    element.innerHTML =
+      '<div class="message ' +
+      (isError ? "error" : "") +
+      '">' +
+      escapeHtml(message) +
+      "</div>";
   }
 
-  loginBtn.disabled = true;
-  loginBtn.textContent = "Logging in...";
 
-  try {
-    const response = await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        slug: slug,
-        password: password
-      })
-    });
+  function clearProductForm() {
+    editingProductId.value = "";
 
-    const data = await response.json();
+    productName.value = "";
+    productPrice.value = "";
+    productImage.value = "";
+    productDescription.value = "";
 
-    if (!response.ok) {
+    productFormTitle.textContent =
+      "Add Product";
+
+    saveProductBtn.textContent =
+      "Add Product";
+
+    cancelEditBtn.classList.add("hidden");
+
+    productMessage.innerHTML = "";
+  }
+
+
+  /* -----------------------------
+     LOGIN
+  ----------------------------- */
+
+  async function login() {
+
+    const slug =
+      loginSlug.value.trim().toLowerCase();
+
+    const password =
+      loginPassword.value;
+
+    loginMessage.innerHTML = "";
+
+    if (!slug || !password) {
       showMessage(
         loginMessage,
-        data.error || "Incorrect shop or password.",
+        "Please enter your shop slug and password.",
         true
       );
+
       return;
     }
-
-    token = data.token;
-    currentBusiness = data.business;
-
-    showDashboard();
-
-    await loadProducts();
-
-  } catch (error) {
-    console.error("Login error:", error);
-
-    showMessage(
-      loginMessage,
-      "Could not connect to ShopLink Ghana. Please try again.",
-      true
-    );
-
-  } finally {
-    loginBtn.disabled = false;
-    loginBtn.textContent = "Login";
-  }
-}
 
     loginBtn.disabled = true;
     loginBtn.textContent = "Logging in...";
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          slug,
-          password
-        })
-      });
 
-      const data = await response.json();
+      const response = await fetch(
+        "/api/login",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            slug: slug,
+            password: password
+          })
+        }
+      );
+
+      const data =
+        await response.json();
 
       if (!response.ok) {
+
         showMessage(
           loginMessage,
-          data.error || "Incorrect shop or password.",
+          data.error ||
+            "Incorrect shop or password.",
           true
         );
+
         return;
       }
 
@@ -570,110 +739,172 @@
       currentBusiness = data.business;
 
       showDashboard();
+
       await loadProducts();
 
     } catch (error) {
-      console.error(error);
+
+      console.error(
+        "Login error:",
+        error
+      );
+
       showMessage(
         loginMessage,
-        "Could not connect to the server.",
+        "Could not connect to ShopLink Ghana.",
         true
       );
+
     } finally {
+
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
     }
   }
 
 
+  /* -----------------------------
+     CREATE SHOP
+  ----------------------------- */
+
   async function createShop() {
-    const name = createName.value.trim();
-    const whatsapp = createWhatsapp.value.trim();
-    const location = createLocation.value.trim();
-    const hours = createHours.value.trim();
-    const description = createDescription.value.trim();
-    const password = createPassword.value;
-    const confirm = confirmPassword.value;
+
+    const name =
+      createName.value.trim();
+
+    const whatsapp =
+      createWhatsapp.value.trim();
+
+    const location =
+      createLocation.value.trim();
+
+    const hours =
+      createHours.value.trim();
+
+    const description =
+      createDescription.value.trim();
+
+    const password =
+      createPassword.value;
+
+    const confirmation =
+      confirmPassword.value;
+
 
     if (!name || !whatsapp || !password) {
+
       showMessage(
         createMessage,
         "Business name, WhatsApp number and password are required.",
         true
       );
+
       return;
     }
 
+
     if (password.length < 6) {
+
       showMessage(
         createMessage,
         "Password must be at least 6 characters.",
         true
       );
+
       return;
     }
 
-    if (password !== confirm) {
+
+    if (password !== confirmation) {
+
       showMessage(
         createMessage,
         "Passwords do not match.",
         true
       );
+
       return;
     }
 
+
     createBtn.disabled = true;
-    createBtn.textContent = "Creating...";
+    createBtn.textContent =
+      "Creating...";
+
 
     try {
-      const response = await fetch("/api/businesses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name,
-          whatsapp,
-          location,
-          hours,
-          description,
-          password
-        })
-      });
 
-      const data = await response.json();
+      const response = await fetch(
+        "/api/businesses",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            name,
+            whatsapp,
+            location,
+            hours,
+            description,
+            password
+          })
+        }
+      );
+
+
+      const data =
+        await response.json();
+
 
       if (!response.ok) {
+
         showMessage(
           createMessage,
-          data.error || "Could not create shop.",
+          data.error ||
+            "Could not create shop.",
           true
         );
+
         return;
       }
 
+
       const fullShopUrl =
-        window.location.origin + data.shopUrl;
+        window.location.origin +
+        data.shopUrl;
+
 
       createMessage.innerHTML =
         '<div class="success-box">' +
         "<strong>Shop created successfully!</strong><br><br>" +
         "Shop slug: <strong>" +
-        escapeHtml(data.business.slug) +
+        escapeHtml(
+          data.business.slug
+        ) +
         "</strong><br><br>" +
         "Shop link:<br>" +
-        escapeHtml(fullShopUrl) +
+        escapeHtml(
+          fullShopUrl
+        ) +
         "<br><br>" +
         "Now log in above using the password you created." +
         "</div>";
 
-      loginSlug.value = data.business.slug;
+
+      loginSlug.value =
+        data.business.slug;
+
       loginPassword.value = "";
 
       createPassword.value = "";
       confirmPassword.value = "";
 
     } catch (error) {
+
       console.error(error);
 
       showMessage(
@@ -683,15 +914,27 @@
       );
 
     } finally {
+
       createBtn.disabled = false;
-      createBtn.textContent = "Create Shop";
+      createBtn.textContent =
+        "Create Shop";
     }
   }
 
 
+  /* -----------------------------
+     DASHBOARD
+  ----------------------------- */
+
   function showDashboard() {
-    authSection.classList.add("hidden");
-    dashboardSection.classList.remove("hidden");
+
+    authSection.classList.add(
+      "hidden"
+    );
+
+    dashboardSection.classList.remove(
+      "hidden"
+    );
 
     businessName.textContent =
       currentBusiness.name;
@@ -702,60 +945,97 @@
     businessWhatsapp.textContent =
       currentBusiness.whatsapp;
 
+
     const fullUrl =
       window.location.origin +
       "/shop/" +
       currentBusiness.slug;
 
-    shopUrl.textContent = fullUrl;
+    shopUrl.textContent =
+      fullUrl;
   }
 
 
   function logout() {
+
     token = "";
     currentBusiness = null;
 
-    authSection.classList.remove("hidden");
-    dashboardSection.classList.add("hidden");
+    authSection.classList.remove(
+      "hidden"
+    );
+
+    dashboardSection.classList.add(
+      "hidden"
+    );
 
     loginPassword.value = "";
+
     productsList.innerHTML = "";
   }
 
 
+  /* -----------------------------
+     LOAD PRODUCTS
+  ----------------------------- */
+
   async function loadProducts() {
-    productsList.textContent = "Loading products...";
+
+    productsList.textContent =
+      "Loading products...";
+
 
     try {
-      const response = await fetch("/api/me", {
-        headers: {
-          Authorization: "Bearer " + token
-        }
-      });
 
-      const data = await response.json();
+      const response =
+        await fetch(
+          "/api/me",
+          {
+            headers: {
+              Authorization:
+                "Bearer " + token
+            }
+          }
+        );
+
+
+      const data =
+        await response.json();
+
 
       if (!response.ok) {
+
         if (response.status === 401) {
+
           logout();
+
           showMessage(
             loginMessage,
             "Your login expired. Please log in again.",
             true
           );
+
           return;
         }
 
+
         productsList.textContent =
-          data.error || "Could not load products.";
+          data.error ||
+          "Could not load products.";
 
         return;
       }
 
-      currentBusiness = data.business;
-      renderProducts(data.products || []);
+
+      currentBusiness =
+        data.business;
+
+      renderProducts(
+        data.products || []
+      );
 
     } catch (error) {
+
       console.error(error);
 
       productsList.textContent =
@@ -764,97 +1044,28 @@
   }
 
 
+  /* -----------------------------
+     RENDER PRODUCTS
+  ----------------------------- */
+
   function renderProducts(products) {
-  if (!products.length) {
+
+    if (!products.length) {
+
+      productsList.innerHTML =
+        "<p>You have not added any products yet.</p>";
+
+      return;
+    }
+
+
     productsList.innerHTML =
-      "<p>You have not added any products yet.</p>";
-    return;
-  }
-
-  productsList.innerHTML = products
-    .map(product => {
-      const image =
-        product.image ||
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
-
-      return `
-        <div class="product">
-
-          <img
-            src="${escapeHtml(image)}"
-            alt="${escapeHtml(product.name)}"
-            onerror="this.style.display='none'"
-          >
-
-          <h3>${escapeHtml(product.name)}</h3>
-
-          <div class="price">
-            GH₵${Number(product.price).toFixed(2)}
-          </div>
-
-          <p>
-            ${escapeHtml(product.description || "")}
-          </p>
-
-          <div class="product-actions">
-
-            <button
-              class="edit"
-              type="button"
-              data-edit-id="${escapeHtml(product.id)}"
-            >
-              ✏️ Edit
-            </button>
-
-            <button
-              class="delete"
-              type="button"
-              data-delete-id="${escapeHtml(product.id)}"
-            >
-              🗑️ Delete
-            </button>
-
-          </div>
-
-        </div>
-      `;
-    })
-    .join("");
-
-  document.querySelectorAll("[data-edit-id]").forEach(button => {
-    button.addEventListener("click", () => {
-      const product = products.find(
-        item => String(item.id) === String(button.dataset.editId)
-      );
-
-      if (!product) {
-        alert("Product not found.");
-        return;
-      }
-
-      startEdit(
-        product.id,
-        product.name,
-        product.price,
-        product.image || "",
-        product.description || ""
-      );
-    });
-  });
-
-  document.querySelectorAll("[data-delete-id]").forEach(button => {
-    button.addEventListener("click", () => {
-      deleteProduct(button.dataset.deleteId);
-    });
-  });
-}
-
-    productsList.innerHTML = products
-      .map(product => {
+      products.map(product => {
 
         const image =
           product.image ||
           "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
+
 
         return `
           <div class="product">
@@ -865,29 +1076,34 @@
               onerror="this.style.display='none'"
             >
 
-            <h3>${escapeHtml(product.name)}</h3>
+            <h3>
+              ${escapeHtml(product.name)}
+            </h3>
 
             <div class="price">
               GH₵${Number(product.price).toFixed(2)}
             </div>
 
             <p>
-              ${escapeHtml(product.description || "")}
+              ${escapeHtml(
+                product.description || ""
+              )}
             </p>
 
             <div class="product-actions">
 
               <button
-  class="edit"
-  type="button"
-  data-edit-id="${escapeHtml(product.id)}"
->
-  ✏️ Edit
-</button>
+                class="edit"
+                type="button"
+                data-edit-id="${escapeHtml(product.id)}"
+              >
+                ✏️ Edit
+              </button>
 
               <button
                 class="delete"
-                onclick="deleteProduct('${escapeHtml(product.id)}')"
+                type="button"
+                data-delete-id="${escapeHtml(product.id)}"
               >
                 🗑️ Delete
               </button>
@@ -896,23 +1112,96 @@
 
           </div>
         `;
-      })
-      .join("");
+
+      }).join("");
+
+
+    document
+      .querySelectorAll("[data-edit-id]")
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            const product =
+              products.find(
+                item =>
+                  String(item.id) ===
+                  String(
+                    button.dataset.editId
+                  )
+              );
+
+
+            if (!product) {
+
+              alert(
+                "Product not found."
+              );
+
+              return;
+            }
+
+
+            startEdit(product);
+          }
+        );
+
+      });
+
+
+    document
+      .querySelectorAll("[data-delete-id]")
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            deleteProduct(
+              button.dataset.deleteId
+            );
+
+          }
+        );
+
+      });
   }
 
 
-  function startEdit(id, name, price, image, description) {
-    editingProductId.value = id;
+  /* -----------------------------
+     START EDIT
+  ----------------------------- */
 
-    productName.value = name;
-    productPrice.value = price;
-    productImage.value = image;
-    productDescription.value = description;
+  function startEdit(product) {
 
-    productFormTitle.textContent = "Edit Product";
-    saveProductBtn.textContent = "Save Changes";
+    editingProductId.value =
+      product.id;
 
-    cancelEditBtn.classList.remove("hidden");
+    productName.value =
+      product.name;
+
+    productPrice.value =
+      product.price;
+
+    productImage.value =
+      product.image || "";
+
+    productDescription.value =
+      product.description || "";
+
+
+    productFormTitle.textContent =
+      "Edit Product";
+
+    saveProductBtn.textContent =
+      "Save Changes";
+
+    cancelEditBtn.classList.remove(
+      "hidden"
+    );
+
 
     window.scrollTo({
       top: 0,
@@ -921,84 +1210,108 @@
   }
 
 
-  function cancelEdit() {
-    editingProductId.value = "";
-
-    productName.value = "";
-    productPrice.value = "";
-    productImage.value = "";
-    productDescription.value = "";
-
-    productFormTitle.textContent = "Add Product";
-    saveProductBtn.textContent = "Add Product";
-
-    cancelEditBtn.classList.add("hidden");
-    productMessage.innerHTML = "";
-  }
-
+  /* -----------------------------
+     SAVE PRODUCT
+  ----------------------------- */
 
   async function saveProduct() {
-    const name = productName.value.trim();
-    const price = productPrice.value;
-    const image = productImage.value.trim();
-    const description = productDescription.value.trim();
-    const id = editingProductId.value;
+
+    const id =
+      editingProductId.value;
+
+    const name =
+      productName.value.trim();
+
+    const price =
+      productPrice.value;
+
+    const image =
+      productImage.value.trim();
+
+    const description =
+      productDescription.value.trim();
+
 
     if (!name || price === "") {
+
       showMessage(
         productMessage,
         "Product name and price are required.",
         true
       );
+
       return;
     }
 
+
     saveProductBtn.disabled = true;
+
     saveProductBtn.textContent =
-      id ? "Saving..." : "Adding...";
+      id
+        ? "Saving..."
+        : "Adding...";
+
 
     try {
-      const url = id
-        ? "/api/products/" + encodeURIComponent(id)
-        : "/api/products";
 
-      const method = id ? "PUT" : "POST";
+      const url =
+        id
+          ? "/api/products/" +
+            encodeURIComponent(id)
+          : "/api/products";
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token
-        },
-        body: JSON.stringify({
-          name,
-          price,
-          image,
-          description
-        })
-      });
 
-      const data = await response.json();
+      const method =
+        id
+          ? "PUT"
+          : "POST";
+
+
+      const response =
+        await fetch(
+          url,
+          {
+            method,
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                "Bearer " + token
+            },
+
+            body: JSON.stringify({
+              name,
+              price,
+              image,
+              description
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
 
       if (!response.ok) {
-        if (response.status === 401) {
-          logout();
-          showMessage(
-            loginMessage,
-            "Your login expired. Please log in again.",
-            true
-          );
-          return;
-        }
 
         showMessage(
           productMessage,
-          data.error || "Could not save product.",
+          data.error ||
+            "Could not save product.",
           true
         );
 
         return;
       }
+
+
+      clearProductForm();
+
+      await loadProducts();
+
 
       showMessage(
         productMessage,
@@ -1007,11 +1320,9 @@
           : "Product added successfully."
       );
 
-      cancelEdit();
-
-      await loadProducts();
 
     } catch (error) {
+
       console.error(error);
 
       showMessage(
@@ -1021,144 +1332,261 @@
       );
 
     } finally {
+
       saveProductBtn.disabled = false;
 
       if (!editingProductId.value) {
-        saveProductBtn.textContent = "Add Product";
+
+        saveProductBtn.textContent =
+          "Add Product";
       }
     }
   }
 
 
+  /* -----------------------------
+     DELETE PRODUCT
+  ----------------------------- */
+
   async function deleteProduct(id) {
-    const confirmed = confirm(
-      "Are you sure you want to delete this product?"
-    );
 
-    if (!confirmed) return;
-
-    try {
-      const response = await fetch(
-        "/api/products/" + encodeURIComponent(id),
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: "Bearer " + token
-          }
-        }
+    const confirmed =
+      confirm(
+        "Are you sure you want to delete this product?"
       );
 
-      const data = await response.json();
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/products/" +
+          encodeURIComponent(id),
+          {
+            method: "DELETE",
+
+            headers: {
+              Authorization:
+                "Bearer " + token
+            }
+          }
+        );
+
+
+      const data =
+        await response.json();
+
 
       if (!response.ok) {
+
         alert(
-          data.error || "Could not delete product."
+          data.error ||
+          "Could not delete product."
         );
+
         return;
       }
+
 
       await loadProducts();
 
     } catch (error) {
+
       console.error(error);
-      alert("Could not connect to the server.");
+
+      alert(
+        "Could not connect to the server."
+      );
     }
   }
 
 
-  async function deleteShop() {
-    const firstConfirm = confirm(
-      "⚠️ WARNING!\n\nAre you sure you want to delete your shop?"
-    );
+  /* -----------------------------
+     COPY SHOP LINK
+  ----------------------------- */
 
-    if (!firstConfirm) return;
+  async function copyShopLink() {
 
-    const secondConfirm = confirm(
-      "🚨 FINAL WARNING 🚨\n\n" +
-      "This will permanently delete:\n\n" +
-      "• Your shop\n" +
-      "• ALL your products\n" +
-      "• Your shop information\n\n" +
-      "THIS CANNOT BE UNDONE.\n\n" +
-      "Do you really want to continue?"
-    );
+    const url =
+      shopUrl.textContent;
 
-    if (!secondConfirm) return;
-
-    deleteShopBtn.disabled = true;
-    deleteShopBtn.textContent = "Deleting Shop...";
 
     try {
-      const response = await fetch(
-        "/api/business/me",
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: "Bearer " + token
-          }
-        }
+
+      await navigator.clipboard
+        .writeText(url);
+
+
+      copyLinkBtn.textContent =
+        "✅ Link Copied!";
+
+
+      setTimeout(() => {
+
+        copyLinkBtn.textContent =
+          "📋 Copy Shop Link";
+
+      }, 2000);
+
+
+    } catch (error) {
+
+      alert(
+        "Could not copy the shop link."
+      );
+    }
+  }
+
+
+  /* -----------------------------
+     OPEN SHOP
+  ----------------------------- */
+
+  function openShop() {
+
+    if (!currentBusiness) {
+
+      alert(
+        "Please log in first."
       );
 
-      const data = await response.json();
+      return;
+    }
 
-      if (!response.ok) {
-        alert(
-          data.error || "Could not delete shop."
+
+    const url =
+      window.location.origin +
+      "/shop/" +
+      currentBusiness.slug;
+
+
+    window.open(
+      url,
+      "_blank"
+    );
+  }
+
+
+  /* -----------------------------
+     DELETE SHOP
+  ----------------------------- */
+
+  async function deleteShop() {
+
+    const firstConfirm =
+      confirm(
+        "⚠️ WARNING!\n\n" +
+        "Are you sure you want to delete your shop?"
+      );
+
+
+    if (!firstConfirm) {
+      return;
+    }
+
+
+    const secondConfirm =
+      confirm(
+        "🚨 FINAL WARNING 🚨\n\n" +
+        "This will permanently delete:\n\n" +
+        "• Your shop\n" +
+        "• ALL your products\n" +
+        "• Your shop information\n\n" +
+        "THIS CANNOT BE UNDONE.\n\n" +
+        "Do you really want to continue?"
+      );
+
+
+    if (!secondConfirm) {
+      return;
+    }
+
+
+    deleteShopBtn.disabled = true;
+
+    deleteShopBtn.textContent =
+      "Deleting Shop...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/business/me",
+          {
+            method: "DELETE",
+
+            headers: {
+              Authorization:
+                "Bearer " + token
+            }
+          }
         );
 
-        deleteShopBtn.disabled = false;
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        alert(
+          data.error ||
+          "Could not delete shop."
+        );
+
+        deleteShopBtn.disabled =
+          false;
+
         deleteShopBtn.textContent =
           "⚠️ DELETE MY SHOP";
 
         return;
       }
 
+
       alert(
         "Your shop has been permanently deleted."
       );
 
+
       token = "";
       currentBusiness = null;
+
 
       window.location.href = "/";
 
     } catch (error) {
+
       console.error(error);
 
       alert(
         "Something went wrong. Please try again."
       );
 
-      deleteShopBtn.disabled = false;
+
+      deleteShopBtn.disabled =
+        false;
+
       deleteShopBtn.textContent =
         "⚠️ DELETE MY SHOP";
     }
   }
 
 
-  async function copyShopLink() {
-    const url = shopUrl.textContent;
+  /* -----------------------------
+     BUTTON EVENTS
+  ----------------------------- */
 
-    try {
-      await navigator.clipboard.writeText(url);
-
-      copyLinkBtn.textContent =
-        "✅ Link Copied!";
-
-      setTimeout(() => {
-        copyLinkBtn.textContent =
-          "📋 Copy Shop Link";
-      }, 2000);
-
-    } catch (error) {
-      alert("Could not copy the link.");
-    }
-  }
-
-
-  loginBtn.addEventListener("click", async function () {
-  await login();
-});
+  loginBtn.addEventListener(
+    "click",
+    login
+  );
 
   createBtn.addEventListener(
     "click",
@@ -1177,7 +1605,7 @@
 
   cancelEditBtn.addEventListener(
     "click",
-    cancelEdit
+    clearProductForm
   );
 
   copyLinkBtn.addEventListener(
@@ -1185,46 +1613,44 @@
     copyShopLink
   );
 
-openShopBtn.addEventListener(
-  "click",
-  () => {
-    if (!currentBusiness) {
-      alert("Please log in first.");
-      return;
-    }
+  openShopBtn.addEventListener(
+    "click",
+    openShop
+  );
 
-    const url =
-      window.location.origin +
-      "/shop/" +
-      currentBusiness.slug;
-
-    window.open(url, "_blank");
-  }
-);
-  
   deleteShopBtn.addEventListener(
     "click",
     deleteShop
   );
 
 
+  /* -----------------------------
+     ENTER KEY
+  ----------------------------- */
+
   loginPassword.addEventListener(
     "keydown",
     event => {
+
       if (event.key === "Enter") {
         login();
       }
+
     }
   );
+
 
   createPassword.addEventListener(
     "keydown",
     event => {
+
       if (event.key === "Enter") {
         createShop();
       }
+
     }
   );
+
 </script>
 
 </body>
