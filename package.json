@@ -1,1 +1,16 @@
-{"name":"shoplink-ghana-v2","version":"2.0.0","description":"Multi-business WhatsApp commerce MVP for Ghana","main":"server.js","scripts":{"start":"node server.js"},"engines":{"node":">=20"},"dependencies":{"express":"^5.1.0"}}
+{
+  "name": "shoplink-ghana-v5",
+  "version": "5.0.0",
+  "description": "ShopLink Ghana WhatsApp commerce platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20 <27"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "express": "^5.1.0"
+  }
+}
