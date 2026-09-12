@@ -1470,6 +1470,34 @@ app.post(
    PUBLIC PAGES
 ========================= */
 
+app.delete("/api/business/me", requireAuth, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from("businesses")
+      .delete()
+      .eq("id", req.businessId);
+
+    if (error) {
+      console.error("Delete shop error:", error);
+      return res.status(500).json({
+        error: "Could not delete shop."
+      });
+    }
+
+    res.json({
+      ok: true,
+      message: "Shop deleted successfully."
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Server error while deleting shop."
+    });
+  }
+});
+
 app.get(
   "/shop/:slug",
   (req, res) => {
