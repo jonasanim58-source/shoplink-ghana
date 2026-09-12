@@ -1,318 +1,1366 @@
 <!doctype html>
 <html>
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Seller Setup — ShopLink Ghana</title>
-<link rel="stylesheet" href="/styles.css">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
+<title>Seller Dashboard — ShopLink Ghana</title>
+
+<link
+  rel="stylesheet"
+  href="/styles.css"
+>
+
+<style>
+
+.dashboard-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 14px;
+  margin-top: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06);
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.product-card img {
+  width: 100%;
+  max-width: 180px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.edit-box {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f7f7f7;
+  border-radius: 10px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.small-text {
+  font-size: 14px;
+  color: #666;
+}
+
+.logout {
+  margin-left: 10px;
+}
+
+</style>
+
 </head>
+
 
 <body>
 
+
 <header>
-  <div class="wrap nav">
-    <a class="logo" href="/">ShopLink Ghana</a>
-    <a href="/">Home</a>
-  </div>
+
+<div class="wrap nav">
+
+<a
+  class="logo"
+  href="/"
+>
+ShopLink Ghana
+</a>
+
+<a href="/">
+Home
+</a>
+
+</div>
+
 </header>
+
 
 <main class="wrap section">
 
-  <span class="eyebrow">SELLER SETUP</span>
 
-  <h1>Create your business shop</h1>
-  <p>Enter your details and get a unique shop link.</p>
+<!-- LOGIN -->
 
-  <form id="bf" class="form">
+<section id="loginSection">
 
-    <label>
-      Business name
-      <input id="name" required placeholder="e.g. Jonas Phones">
-    </label>
+<span class="eyebrow">
+SELLER LOGIN
+</span>
 
-    <label>
-      WhatsApp number
-      <input id="wa" required placeholder="0241234567">
-    </label>
+<h1>
+Seller Dashboard
+</h1>
 
-    <label>
-      Location
-      <input id="loc" placeholder="Kumasi, Ghana">
-    </label>
+<p>
+Log in to manage your products.
+</p>
 
-    <label>
-      Opening hours
-      <input id="hours" placeholder="Mon–Sat, 8 AM–7 PM">
-    </label>
 
-    <label>
-      Description
-      <textarea id="desc"></textarea>
-    </label>
+<form
+  id="loginForm"
+  class="form"
+>
 
-    <button class="btn" type="submit">Create shop</button>
+<label>
 
-  </form>
+Shop link
 
-  <div id="result" class="result hidden"></div>
+<input
+  id="loginSlug"
+  required
+  placeholder="accra-style-hub"
+>
 
-  <section id="ps" class="hidden">
+</label>
 
-    <h2>Add products</h2>
 
-    <form id="pf" class="form">
+<label>
 
-      <label>
-        Product name
-        <input id="pn" required>
-      </label>
+Password
 
-      <label>
-        Price (GH₵)
-        <input id="price" type="number" min="0" required>
-      </label>
+<input
+  id="loginPassword"
+  type="password"
+  required
+  placeholder="Your seller password"
+>
 
-      <label>
-        Image URL
-        <input id="img" placeholder="https://...">
-      </label>
+</label>
 
-      <label>
-        Description
-        <textarea id="pd"></textarea>
-      </label>
 
-      <button class="btn" type="submit">Add product</button>
+<button
+  class="btn"
+  type="submit"
+>
+Login
+</button>
 
-    </form>
+</form>
 
-    <div id="list"></div>
 
-  </section>
+<p class="small-text">
+
+Don't have a shop yet?
+Create one below.
+
+</p>
+
+</section>
+
+
+
+<!-- CREATE SHOP -->
+
+<section
+  id="createSection"
+>
+
+<span class="eyebrow">
+NEW SELLER
+</span>
+
+<h2>
+Create your business shop
+</h2>
+
+
+<form
+  id="businessForm"
+  class="form"
+>
+
+
+<label>
+
+Business name
+
+<input
+  id="name"
+  required
+  placeholder="e.g. Jonas Phones"
+>
+
+</label>
+
+
+<label>
+
+WhatsApp number
+
+<input
+  id="wa"
+  required
+  placeholder="0241234567"
+>
+
+</label>
+
+
+<label>
+
+Location
+
+<input
+  id="loc"
+  placeholder="Kumasi, Ghana"
+>
+
+</label>
+
+
+<label>
+
+Opening hours
+
+<input
+  id="hours"
+  placeholder="Mon–Sat, 8 AM–7 PM"
+>
+
+</label>
+
+
+<label>
+
+Description
+
+<textarea
+  id="desc"
+></textarea>
+
+</label>
+
+
+<label>
+
+Seller password
+
+<input
+  id="createPassword"
+  type="password"
+  minlength="6"
+  required
+  placeholder="At least 6 characters"
+>
+
+</label>
+
+
+<button
+  class="btn"
+  type="submit"
+>
+Create shop
+</button>
+
+
+</form>
+
+</section>
+
+
+
+<!-- DASHBOARD -->
+
+<section
+  id="dashboard"
+  class="hidden"
+>
+
+
+<div class="dashboard-card">
+
+<h1 id="shopName">
+</h1>
+
+<p id="shopInfo">
+</p>
+
+
+<p>
+
+<a
+  id="shopLink"
+  target="_blank"
+>
+Open public shop
+</a>
+
+</p>
+
+
+<button
+  class="btn logout"
+  type="button"
+  onclick="logout()"
+>
+Log out
+</button>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+<h2>
+Add product
+</h2>
+
+
+<form
+  id="productForm"
+  class="form"
+>
+
+
+<label>
+
+Product name
+
+<input
+  id="pn"
+  required
+>
+
+</label>
+
+
+<label>
+
+Price (GH₵)
+
+<input
+  id="price"
+  type="number"
+  min="0"
+  required
+>
+
+</label>
+
+
+<label>
+
+Image URL
+
+<input
+  id="img"
+  placeholder="https://..."
+>
+
+</label>
+
+
+<label>
+
+Description
+
+<textarea
+  id="pd"
+></textarea>
+
+</label>
+
+
+<button
+  class="btn"
+  type="submit"
+>
+Add product
+</button>
+
+
+</form>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+<h2>
+Your products
+</h2>
+
+<div id="list">
+</div>
+
+</div>
+
+
+</section>
+
 
 </main>
 
+
+
 <script>
 
-let current = null;
 
-const bf = document.getElementById("bf");
-const pf = document.getElementById("pf");
+let token =
+  localStorage.getItem(
+    "shoplinkSellerToken"
+  );
 
-const result = document.getElementById("result");
-const ps = document.getElementById("ps");
-const list = document.getElementById("list");
 
-bf.onsubmit = async function(e) {
+let currentBusiness = null;
 
-  e.preventDefault();
 
-  try {
 
-    const response = await fetch("/api/businesses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name: document.getElementById("name").value,
-        whatsapp: document.getElementById("wa").value,
-        location: document.getElementById("loc").value,
-        hours: document.getElementById("hours").value,
-        description: document.getElementById("desc").value
-      })
-    });
+const loginSection =
+  document.getElementById(
+    "loginSection"
+  );
 
-    const data = await response.json();
 
-    if (!response.ok) {
-      alert(data.error || "Could not create shop.");
-      return;
+const createSection =
+  document.getElementById(
+    "createSection"
+  );
+
+
+const dashboard =
+  document.getElementById(
+    "dashboard"
+  );
+
+
+const list =
+  document.getElementById(
+    "list"
+  );
+
+
+
+/* =========================
+   LOGIN
+========================= */
+
+
+document
+  .getElementById("loginForm")
+  .onsubmit = async function(e) {
+
+    e.preventDefault();
+
+
+    const slug =
+      document
+        .getElementById("loginSlug")
+        .value
+        .trim();
+
+
+    const password =
+      document
+        .getElementById("loginPassword")
+        .value;
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/login",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                slug,
+                password
+              })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        alert(
+          data.error ||
+          "Login failed."
+        );
+
+        return;
+      }
+
+
+      token =
+        data.token;
+
+
+      localStorage.setItem(
+        "shoplinkSellerToken",
+        token
+      );
+
+
+      currentBusiness =
+        data.business;
+
+
+      showDashboard();
+
+
+    } catch(error) {
+
+      console.error(error);
+
+      alert(
+        "Something went wrong."
+      );
+
     }
 
-    current = data.business;
-
-    result.classList.remove("hidden");
-
-    result.innerHTML = `
-      <h3>Shop created 🎉</h3>
-
-      <p>
-        <a target="_blank" href="/shop/${current.slug}">
-          Open your shop
-        </a>
-      </p>
-
-      <p>
-        <strong>Share your shop:</strong><br>
-        ${location.origin}/shop/${current.slug}
-      </p>
-
-      <button class="btn" type="button" onclick="copyShopLink()">
-        Copy shop link
-      </button>
-    `;
-
-    ps.classList.remove("hidden");
-
-  } catch (error) {
-
-    console.error(error);
-    alert("Something went wrong. Please try again.");
-
-  }
-
-};
+  };
 
 
-pf.onsubmit = async function(e) {
 
-  e.preventDefault();
+/* =========================
+   CREATE SHOP
+========================= */
 
-  if (!current) {
-    alert("Create your shop first.");
-    return;
-  }
 
-  try {
+document
+  .getElementById("businessForm")
+  .onsubmit = async function(e) {
 
-    const response = await fetch("/api/products", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        businessId: current.id,
-        name: document.getElementById("pn").value,
-        price: document.getElementById("price").value,
-        image: document.getElementById("img").value,
-        description: document.getElementById("pd").value
-      })
-    });
+    e.preventDefault();
 
-    const data = await response.json();
 
-    if (!response.ok) {
-      alert(data.error || "Could not add product.");
-      return;
+    try {
+
+      const response =
+        await fetch(
+          "/api/businesses",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+
+                name:
+                  document
+                    .getElementById("name")
+                    .value,
+
+                whatsapp:
+                  document
+                    .getElementById("wa")
+                    .value,
+
+                location:
+                  document
+                    .getElementById("loc")
+                    .value,
+
+                hours:
+                  document
+                    .getElementById("hours")
+                    .value,
+
+                description:
+                  document
+                    .getElementById("desc")
+                    .value,
+
+                password:
+                  document
+                    .getElementById(
+                      "createPassword"
+                    )
+                    .value
+
+              })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        alert(
+          data.error ||
+          "Could not create shop."
+        );
+
+        return;
+      }
+
+
+      token =
+        data.token;
+
+
+      localStorage.setItem(
+        "shoplinkSellerToken",
+        token
+      );
+
+
+      currentBusiness =
+        data.business;
+
+
+      alert(
+        "Shop created successfully!"
+      );
+
+
+      showDashboard();
+
+
+    } catch(error) {
+
+      console.error(error);
+
+      alert(
+        "Something went wrong."
+      );
+
     }
 
-    document.getElementById("pn").value = "";
-    document.getElementById("price").value = "";
-    document.getElementById("img").value = "";
-    document.getElementById("pd").value = "";
-
-    loadProducts();
-
-  } catch (error) {
-
-    console.error(error);
-    alert("Something went wrong.");
-
-  }
-
-};
+  };
 
 
-async function loadProducts() {
 
-  if (!current) return;
+/* =========================
+   SHOW DASHBOARD
+========================= */
 
-  try {
 
-    const response = await fetch(
-      "/api/business/" + current.slug
+function showDashboard() {
+
+  loginSection.classList.add(
+    "hidden"
+  );
+
+  createSection.classList.add(
+    "hidden"
+  );
+
+  dashboard.classList.remove(
+    "hidden"
+  );
+
+
+  document.getElementById(
+    "shopName"
+  ).textContent =
+    currentBusiness.name;
+
+
+  document.getElementById(
+    "shopInfo"
+  ).textContent =
+    currentBusiness.location;
+
+
+  const link =
+    "/shop/" +
+    currentBusiness.slug;
+
+
+  const shopLink =
+    document.getElementById(
+      "shopLink"
     );
 
-    const data = await response.json();
 
-    if (!response.ok) {
-      list.innerHTML = "<p>Unable to load products.</p>";
-      return;
-    }
+  shopLink.href = link;
 
-    if (!data.products.length) {
-
-      list.innerHTML = "<p>No products added yet.</p>";
-
-      return;
-    }
-
-    list.innerHTML = data.products.map(function(p) {
-
-      return `
-        <div class="list-item">
-          <span>
-            <b>${escapeHtml(p.name)}</b>
-            — GH₵${p.price}
-          </span>
-
-          <button
-            type="button"
-            onclick="deleteProduct('${p.id}')">
-            Delete
-          </button>
-        </div>
-      `;
-
-    }).join("");
-
-  } catch (error) {
-
-    console.error(error);
-
-    list.innerHTML = "<p>Unable to load products.</p>";
-
-  }
-
-}
-
-
-async function deleteProduct(id) {
-
-  await fetch("/api/products/" + id, {
-    method: "DELETE"
-  });
 
   loadProducts();
 
 }
 
 
-async function copyShopLink() {
 
-  if (!current) return;
+/* =========================
+   LOAD CURRENT SELLER
+========================= */
 
-  const shopLink =
-    location.origin + "/shop/" + current.slug;
+
+async function loadMe() {
+
+  if (!token) return;
+
 
   try {
 
-    await navigator.clipboard.writeText(shopLink);
+    const response =
+      await fetch(
+        "/api/me",
+        {
+          headers: {
+            Authorization:
+              "Bearer " + token
+          }
+        }
+      );
 
-    alert("Shop link copied!");
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      logout();
+
+      return;
+    }
+
+
+    currentBusiness =
+      data.business;
+
+
+    showDashboard();
+
 
   } catch {
 
-    alert(shopLink);
+    logout();
 
   }
 
 }
 
 
-function escapeHtml(text) {
 
-  return String(text)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+/* =========================
+   ADD PRODUCT
+========================= */
+
+
+document
+  .getElementById("productForm")
+  .onsubmit = async function(e) {
+
+    e.preventDefault();
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/products",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                "Bearer " + token
+            },
+
+            body:
+              JSON.stringify({
+
+                name:
+                  document
+                    .getElementById("pn")
+                    .value,
+
+                price:
+                  document
+                    .getElementById("price")
+                    .value,
+
+                image:
+                  document
+                    .getElementById("img")
+                    .value,
+
+                description:
+                  document
+                    .getElementById("pd")
+                    .value
+
+              })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        alert(
+          data.error ||
+          "Could not add product."
+        );
+
+        return;
+      }
+
+
+      document
+        .getElementById("pn")
+        .value = "";
+
+      document
+        .getElementById("price")
+        .value = "";
+
+      document
+        .getElementById("img")
+        .value = "";
+
+      document
+        .getElementById("pd")
+        .value = "";
+
+
+      loadProducts();
+
+
+    } catch(error) {
+
+      console.error(error);
+
+      alert(
+        "Something went wrong."
+      );
+
+    }
+
+  };
+
+
+
+/* =========================
+   LOAD PRODUCTS
+========================= */
+
+
+async function loadProducts() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/me",
+        {
+          headers: {
+            Authorization:
+              "Bearer " + token
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      alert(
+        data.error ||
+        "Unable to load products."
+      );
+
+      return;
+    }
+
+
+    renderProducts(
+      data.products
+    );
+
+
+  } catch(error) {
+
+    console.error(error);
+
+    list.innerHTML =
+      "<p>Unable to load products.</p>";
+
+  }
 
 }
 
+
+
+/* =========================
+   RENDER PRODUCTS
+========================= */
+
+
+function renderProducts(products) {
+
+  if (!products.length) {
+
+    list.innerHTML =
+      "<p>No products added yet.</p>";
+
+    return;
+  }
+
+
+  list.innerHTML =
+    products.map(function(p) {
+
+      return `
+
+        <div
+          class="product-card"
+          id="product-${p.id}"
+        >
+
+          <img
+            src="${escapeHtml(p.image)}"
+            alt="${escapeHtml(p.name)}"
+          >
+
+          <h3>
+            ${escapeHtml(p.name)}
+          </h3>
+
+          <p>
+            <strong>
+              GH₵${p.price}
+            </strong>
+          </p>
+
+          <p>
+            ${escapeHtml(
+              p.description || ""
+            )}
+          </p>
+
+
+          <div class="actions">
+
+            <button
+              class="btn"
+              type="button"
+              onclick="editProduct('${p.id}')"
+            >
+              Edit
+            </button>
+
+
+            <button
+              type="button"
+              onclick="deleteProduct('${p.id}')"
+            >
+              Delete
+            </button>
+
+          </div>
+
+
+          <div
+            id="edit-${p.id}"
+            class="edit-box hidden"
+          >
+
+            <label>
+              Product name
+
+              <input
+                id="edit-name-${p.id}"
+                value="${escapeHtml(p.name)}"
+              >
+
+            </label>
+
+
+            <label>
+              Price (GH₵)
+
+              <input
+                id="edit-price-${p.id}"
+                type="number"
+                min="0"
+                value="${p.price}"
+              >
+
+            </label>
+
+
+            <label>
+              Image URL
+
+              <input
+                id="edit-image-${p.id}"
+                value="${escapeHtml(p.image)}"
+              >
+
+            </label>
+
+
+            <label>
+              Description
+
+              <textarea
+                id="edit-description-${p.id}"
+              >${escapeHtml(
+                p.description || ""
+              )}</textarea>
+
+            </label>
+
+
+            <div class="actions">
+
+              <button
+                class="btn"
+                type="button"
+                onclick="saveProduct('${p.id}')"
+              >
+                Save changes
+              </button>
+
+
+              <button
+                type="button"
+                onclick="cancelEdit('${p.id}')"
+              >
+                Cancel
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+}
+
+
+
+/* =========================
+   EDIT PRODUCT
+========================= */
+
+
+function editProduct(id) {
+
+  const box =
+    document.getElementById(
+      "edit-" + id
+    );
+
+  box.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+
+/* =========================
+   CANCEL EDIT
+========================= */
+
+
+function cancelEdit(id) {
+
+  const box =
+    document.getElementById(
+      "edit-" + id
+    );
+
+  box.classList.add(
+    "hidden"
+  );
+
+}
+
+
+
+/* =========================
+   SAVE EDIT
+========================= */
+
+
+async function saveProduct(id) {
+
+  const name =
+    document.getElementById(
+      "edit-name-" + id
+    ).value;
+
+
+  const price =
+    document.getElementById(
+      "edit-price-" + id
+    ).value;
+
+
+  const image =
+    document.getElementById(
+      "edit-image-" + id
+    ).value;
+
+
+  const description =
+    document.getElementById(
+      "edit-description-" + id
+    ).value;
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/products/" + id,
+        {
+          method: "PUT",
+
+          headers: {
+
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              "Bearer " + token
+          },
+
+          body:
+            JSON.stringify({
+              name,
+              price,
+              image,
+              description
+            })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      alert(
+        data.error ||
+        "Could not update product."
+      );
+
+      return;
+    }
+
+
+    alert(
+      "Product updated!"
+    );
+
+
+    loadProducts();
+
+
+  } catch(error) {
+
+    console.error(error);
+
+    alert(
+      "Something went wrong."
+    );
+
+  }
+
+}
+
+
+
+/* =========================
+   DELETE
+========================= */
+
+
+async function deleteProduct(id) {
+
+  if (
+    !confirm(
+      "Delete this product?"
+    )
+  ) {
+    return;
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/products/" + id,
+        {
+          method: "DELETE",
+
+          headers: {
+            Authorization:
+              "Bearer " + token
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      alert(
+        data.error ||
+        "Could not delete product."
+      );
+
+      return;
+    }
+
+
+    loadProducts();
+
+
+  } catch(error) {
+
+    console.error(error);
+
+    alert(
+      "Something went wrong."
+    );
+
+  }
+
+}
+
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+
+function logout() {
+
+  localStorage.removeItem(
+    "shoplinkSellerToken"
+  );
+
+  token = null;
+
+  currentBusiness = null;
+
+
+  dashboard.classList.add(
+    "hidden"
+  );
+
+  loginSection.classList.remove(
+    "hidden"
+  );
+
+  createSection.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+
+/* =========================
+   ESCAPE HTML
+========================= */
+
+
+function escapeHtml(text) {
+
+  return String(text)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+
+/* =========================
+   START
+========================= */
+
+
+loadMe();
+
 </script>
 
+
 </body>
+
 </html>
