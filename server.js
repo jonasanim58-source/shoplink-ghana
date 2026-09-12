@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 const DB = path.join(__dirname, "data.json");
 
 const AUTH_SECRET =
-  process.env.AUTH_SECRET || "shoplink-change-this-secret";
+  process.env.AUTH_SECRET || "CHANGE_THIS_SECRET";
 
 const ADMIN_PASSWORD =
   process.env.SHOPLINK_ADMIN_PASSWORD || "";
@@ -22,9 +22,7 @@ app.use(express.static(path.join(__dirname, "public")));
 ========================= */
 
 function load() {
-
   if (!fs.existsSync(DB)) {
-
     fs.writeFileSync(
       DB,
       JSON.stringify(
@@ -41,7 +39,6 @@ function load() {
                 "Fashion, accessories and everyday essentials."
             }
           ],
-
           products: [
             {
               id: "p1",
@@ -53,7 +50,6 @@ function load() {
               description:
                 "Comfortable everyday sneakers."
             },
-
             {
               id: "p2",
               businessId: "demo",
@@ -64,7 +60,6 @@ function load() {
               description:
                 "Elegant handbag."
             },
-
             {
               id: "p3",
               businessId: "demo",
@@ -83,12 +78,17 @@ function load() {
     );
   }
 
-  return JSON.parse(fs.readFileSync(DB, "utf8"));
+  return JSON.parse(
+    fs.readFileSync(DB, "utf8")
+  );
 }
 
 
 function save(data) {
-  fs.writeFileSync(DB, JSON.stringify(data, null, 2));
+  fs.writeFileSync(
+    DB,
+    JSON.stringify(data, null, 2)
+  );
 }
 
 
@@ -97,9 +97,8 @@ function id() {
 }
 
 
-function slugify(s) {
-
-  return s
+function slugify(value) {
+  return String(value)
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -109,153 +108,175 @@ function slugify(s) {
 
 
 /* =========================
-   PASSWORD HELPERS
+   PASSWORD
 ========================= */
 
 function hashPassword(password) {
+  const salt =
+    crypto.randomBytes(16).toString("hex");
 
-  const salt = crypto.randomBytes(16).toString("hex");
+  const hash =
+    crypto
+      .scryptSync(password, salt, 64)
+      .toString("hex");
 
-  const hash = crypto
-    .scryptSync(password, salt, 64)
-    .toString("hex");
-
-  return `${salt}:${hash}`;
+  return salt + ":" + hash;
 }
 
 
 function verifyPassword(password, stored) {
-
   try {
+    if (!stored) return false;
 
     const parts = stored.split(":");
 
-    if (parts.length !== 2) return false;
+    if (parts.length !== 2) {
+      return false;
+    }
 
     const salt = parts[0];
     const storedHash = parts[1];
 
-    const hash = crypto.scryptSync(
-      password,
-      salt,
-      64
-    ).toString("hex");
+    const hash =
+      crypto
+        .scryptSync(password, salt, 64)
+        .toString("hex");
 
-    return crypto.timingSafeEqual(
-      Buffer.from(hash, "hex"),
-      Buffer.from(storedHash, "hex")
+    const a = Buffer.from(
+      hash,
+      "hex"
     );
 
-  } catch {
+    const b = Buffer.from(
+      storedHash,
+      "hex"
+    );
 
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(a, b);
+
+  } catch {
     return false;
   }
 }
 
 
 /* =========================
-   LOGIN TOKEN
+   TOKEN
 ========================= */
 
 function createToken(businessId) {
-
   const payload = {
     businessId,
-    exp: Date.now() + 1000 * 60 * 60 * 24 * 7
+    expires: Date.now() + 86400000
   };
 
-  const encoded = Buffer
-    .from(JSON.stringify(payload))
-    .toString("base64url");
+  const encoded =
+    Buffer
+      .from(JSON.stringify(payload))
+      .toString("base64url");
 
-  const signature = crypto
-    .createHmac("sha256", AUTH_SECRET)
-    .update(encoded)
-    .digest("base64url");
+  const signature =
+    crypto
+      .createHmac(
+        "sha256",
+        AUTH_SECRET
+      )
+      .update(encoded)
+      .digest("base64url");
 
-  return `${encoded}.${signature}`;
+  return encoded + "." + signature;
 }
 
 
 function verifyToken(token) {
-
   try {
-
     if (!token) return null;
 
     const parts = token.split(".");
 
-    if (parts.length !== 2) return null;
+    if (parts.length !== 2) {
+      return null;
+    }
 
     const encoded = parts[0];
     const signature = parts[1];
 
-    const expected = crypto
-      .createHmac("sha256", AUTH_SECRET)
-      .update(encoded)
-      .digest("base64url");
+    const expected =
+      crypto
+        .createHmac(
+          "sha256",
+          AUTH_SECRET
+        )
+        .update(encoded)
+        .digest("base64url");
+
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expected);
 
     if (
-      signature.length !== expected.length ||
-      !crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(expected)
-      )
+      a.length !== b.length ||
+      !crypto.timingSafeEqual(a, b)
     ) {
       return null;
     }
 
-    const payload = JSON.parse(
-      Buffer.from(encoded, "base64url").toString()
-    );
+    const payload =
+      JSON.parse(
+        Buffer
+          .from(encoded, "base64url")
+          .toString()
+      );
 
-    if (!payload.businessId) return null;
-
-    if (payload.exp < Date.now()) return null;
+    if (
+      !payload.businessId ||
+      payload.expires < Date.now()
+    ) {
+      return null;
+    }
 
     return payload;
 
   } catch {
-
     return null;
   }
 }
 
 
 function getToken(req) {
+  const auth =
+    req.headers.authorization || "";
 
-  const auth = req.headers.authorization || "";
-
-  if (auth.startsWith("Bearer ")) {
-    return auth.substring(7);
+  if (!auth.startsWith("Bearer ")) {
+    return null;
   }
 
-  return null;
+  return auth.substring(7);
 }
 
 
 function requireAuth(req, res, next) {
-
   const token = getToken(req);
   const payload = verifyToken(token);
 
   if (!payload) {
-
-    return res
-      .status(401)
-      .json({
-        error: "Seller login required."
-      });
+    return res.status(401).json({
+      error: "Seller login required."
+    });
   }
 
-  req.businessId = payload.businessId;
+  req.businessId =
+    payload.businessId;
 
   next();
 }
 
 
 /* =========================
-   PUBLIC SHOP
+   PUBLIC BUSINESS
 ========================= */
 
 app.get(
@@ -266,30 +287,32 @@ app.get(
 
     const business =
       data.businesses.find(
-        x => x.slug === req.params.slug
+        x =>
+          x.slug ===
+          req.params.slug
       );
 
     if (!business) {
-
-      return res
-        .status(404)
-        .json({
-          error: "Shop not found"
-        });
+      return res.status(404).json({
+        error: "Shop not found"
+      });
     }
 
     res.json({
       business,
-      products: data.products.filter(
-        x => x.businessId === business.id
-      )
+      products:
+        data.products.filter(
+          x =>
+            x.businessId ===
+            business.id
+        )
     });
   }
 );
 
 
 /* =========================
-   CREATE BUSINESS
+   CREATE SHOP
 ========================= */
 
 app.post(
@@ -306,23 +329,20 @@ app.post(
     } = req.body || {};
 
     if (!name || !whatsapp) {
-
-      return res
-        .status(400)
-        .json({
-          error:
-            "Business name and WhatsApp number are required."
-        });
+      return res.status(400).json({
+        error:
+          "Business name and WhatsApp number are required."
+      });
     }
 
-    if (!password || password.length < 6) {
-
-      return res
-        .status(400)
-        .json({
-          error:
-            "Seller password must be at least 6 characters."
-        });
+    if (
+      !password ||
+      String(password).length < 6
+    ) {
+      return res.status(400).json({
+        error:
+          "Password must be at least 6 characters."
+      });
     }
 
     const data = load();
@@ -338,59 +358,56 @@ app.post(
         x => x.slug === slug
       )
     ) {
-
       slug =
-        base + "-" + number++;
-
+        base + "-" + number;
+      number++;
     }
 
     const business = {
-
       id: id(),
-
       name,
-
       slug,
-
       whatsapp:
-        String(whatsapp).replace(/\D/g, ""),
-
+        String(whatsapp).replace(
+          /\D/g,
+          ""
+        ),
       location:
         location || "Ghana",
-
       hours:
         hours || "Contact seller",
-
       description:
         description || "",
-
       passwordHash:
-        hashPassword(password),
-
+        hashPassword(
+          String(password)
+        ),
       createdAt:
         new Date().toISOString()
     };
 
-    data.businesses.push(business);
+    data.businesses.push(
+      business
+    );
 
     save(data);
 
     const token =
-      createToken(business.id);
+      createToken(
+        business.id
+      );
 
     res.json({
       ok: true,
       business,
-      token,
-      shopUrl:
-        "/shop/" + business.slug
+      token
     });
   }
 );
 
 
 /* =========================
-   SELLER LOGIN
+   LOGIN
 ========================= */
 
 app.post(
@@ -403,73 +420,66 @@ app.post(
     } = req.body || {};
 
     if (!slug || !password) {
-
-      return res
-        .status(400)
-        .json({
-          error:
-            "Shop link and password are required."
-        });
+      return res.status(400).json({
+        error:
+          "Shop name and password are required."
+      });
     }
 
     const data = load();
 
     const business =
       data.businesses.find(
-        x => x.slug === slug
+        x =>
+          x.slug ===
+          String(slug).trim()
       );
 
     if (!business) {
-
-      return res
-        .status(401)
-        .json({
-          error:
-            "Shop not found."
-        });
+      return res.status(401).json({
+        error:
+          "Incorrect shop or password."
+      });
     }
-
 
     let valid = false;
 
-
-    /* Existing shops created before
-       password protection can use the
-       Render admin password. */
+    /*
+      Existing shops created before
+      passwords were added can use the
+      Render admin password.
+    */
 
     if (
       business.passwordHash &&
       verifyPassword(
-        password,
+        String(password),
         business.passwordHash
       )
     ) {
-
       valid = true;
-
-    } else if (
-      ADMIN_PASSWORD &&
-      password === ADMIN_PASSWORD
-    ) {
-
-      valid = true;
-
     }
 
+    if (
+      !valid &&
+      ADMIN_PASSWORD &&
+      String(password) ===
+        String(ADMIN_PASSWORD)
+    ) {
+      valid = true;
+    }
 
     if (!valid) {
-
-      return res
-        .status(401)
-        .json({
-          error:
-            "Incorrect password."
-        });
+      return res.status(401).json({
+        error:
+          "Incorrect shop or password."
+      });
     }
 
-
     const token =
-      createToken(business.id);
+      createToken(
+        business.id
+      );
 
     res.json({
       ok: true,
@@ -481,7 +491,7 @@ app.post(
 
 
 /* =========================
-   CURRENT SELLER
+   SELLER DATA
 ========================= */
 
 app.get(
@@ -493,17 +503,16 @@ app.get(
 
     const business =
       data.businesses.find(
-        x => x.id === req.businessId
+        x =>
+          x.id ===
+          req.businessId
       );
 
     if (!business) {
-
-      return res
-        .status(404)
-        .json({
-          error:
-            "Business not found."
-        });
+      return res.status(404).json({
+        error:
+          "Business not found."
+      });
     }
 
     res.json({
@@ -535,54 +544,46 @@ app.post(
       description
     } = req.body || {};
 
+    if (!name || !price) {
+      return res.status(400).json({
+        error:
+          "Product name and price are required."
+      });
+    }
+
     const data = load();
 
     const business =
       data.businesses.find(
-        x => x.id === req.businessId
+        x =>
+          x.id ===
+          req.businessId
       );
 
     if (!business) {
-
-      return res
-        .status(404)
-        .json({
-          error:
-            "Business not found."
-        });
-    }
-
-    if (!name || !price) {
-
-      return res
-        .status(400)
-        .json({
-          error:
-            "Product name and price are required."
-        });
+      return res.status(404).json({
+        error:
+          "Business not found."
+      });
     }
 
     const product = {
-
       id: id(),
-
       businessId:
         business.id,
-
       name,
-
       price:
         Number(price),
-
       image:
         image ||
         "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80",
-
       description:
         description || ""
     };
 
-    data.products.push(product);
+    data.products.push(
+      product
+    );
 
     save(data);
 
@@ -603,26 +604,6 @@ app.put(
   requireAuth,
   (req, res) => {
 
-    const data = load();
-
-    const product =
-      data.products.find(
-        x =>
-          x.id === req.params.id &&
-          x.businessId ===
-            req.businessId
-      );
-
-    if (!product) {
-
-      return res
-        .status(404)
-        .json({
-          error:
-            "Product not found."
-        });
-    }
-
     const {
       name,
       price,
@@ -631,23 +612,35 @@ app.put(
     } = req.body || {};
 
     if (!name || !price) {
+      return res.status(400).json({
+        error:
+          "Product name and price are required."
+      });
+    }
 
-      return res
-        .status(400)
-        .json({
-          error:
-            "Product name and price are required."
-        });
+    const data = load();
+
+    const product =
+      data.products.find(
+        x =>
+          x.id ===
+            req.params.id &&
+          x.businessId ===
+            req.businessId
+      );
+
+    if (!product) {
+      return res.status(404).json({
+        error:
+          "Product not found."
+      });
     }
 
     product.name = name;
-
     product.price =
       Number(price);
-
     product.image =
       image || product.image;
-
     product.description =
       description || "";
 
@@ -675,22 +668,23 @@ app.delete(
     const index =
       data.products.findIndex(
         x =>
-          x.id === req.params.id &&
+          x.id ===
+            req.params.id &&
           x.businessId ===
             req.businessId
       );
 
     if (index === -1) {
-
-      return res
-        .status(404)
-        .json({
-          error:
-            "Product not found."
-        });
+      return res.status(404).json({
+        error:
+          "Product not found."
+      });
     }
 
-    data.products.splice(index, 1);
+    data.products.splice(
+      index,
+      1
+    );
 
     save(data);
 
@@ -707,48 +701,52 @@ app.delete(
 
 app.get(
   "/shop/:slug",
-  (req, res) =>
+  (req, res) => {
     res.sendFile(
       path.join(
         __dirname,
         "public",
         "shop.html"
       )
-    )
+    );
+  }
 );
 
 
 app.get(
   "/seller",
-  (req, res) =>
+  (req, res) => {
     res.sendFile(
       path.join(
         __dirname,
         "public",
         "seller.html"
       )
-    )
+    );
+  }
 );
 
 
 app.get(
   "*splat",
-  (req, res) =>
+  (req, res) => {
     res.sendFile(
       path.join(
         __dirname,
         "public",
         "index.html"
       )
-    )
+    );
+  }
 );
 
 
 app.listen(
   PORT,
-  () =>
+  () => {
     console.log(
       "ShopLink Ghana V3 running on port " +
         PORT
-    )
+    );
+  }
 );
