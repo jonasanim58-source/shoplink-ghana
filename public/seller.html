@@ -325,6 +325,10 @@
       <button id="copyLinkBtn" class="secondary">
         📋 Copy Shop Link
       </button>
+      
+      <button id="openShopBtn" class="success">
+  🛍️ Open My Shop
+</button>
 
       <button id="logoutBtn" class="logout">
         Logout
@@ -436,6 +440,7 @@
   const shopUrl = document.getElementById("shopUrl");
 
   const copyLinkBtn = document.getElementById("copyLinkBtn");
+  const openShopBtn = document.getElementById("openShopBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
   const productFormTitle = document.getElementById("productFormTitle");
@@ -710,11 +715,89 @@
 
 
   function renderProducts(products) {
-    if (!products.length) {
-      productsList.innerHTML =
-        "<p>You have not added any products yet.</p>";
-      return;
-    }
+  if (!products.length) {
+    productsList.innerHTML =
+      "<p>You have not added any products yet.</p>";
+    return;
+  }
+
+  productsList.innerHTML = products
+    .map(product => {
+      const image =
+        product.image ||
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
+
+      return `
+        <div class="product">
+
+          <img
+            src="${escapeHtml(image)}"
+            alt="${escapeHtml(product.name)}"
+            onerror="this.style.display='none'"
+          >
+
+          <h3>${escapeHtml(product.name)}</h3>
+
+          <div class="price">
+            GH₵${Number(product.price).toFixed(2)}
+          </div>
+
+          <p>
+            ${escapeHtml(product.description || "")}
+          </p>
+
+          <div class="product-actions">
+
+            <button
+              class="edit"
+              type="button"
+              data-edit-id="${escapeHtml(product.id)}"
+            >
+              ✏️ Edit
+            </button>
+
+            <button
+              class="delete"
+              type="button"
+              data-delete-id="${escapeHtml(product.id)}"
+            >
+              🗑️ Delete
+            </button>
+
+          </div>
+
+        </div>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll("[data-edit-id]").forEach(button => {
+    button.addEventListener("click", () => {
+      const product = products.find(
+        item => String(item.id) === String(button.dataset.editId)
+      );
+
+      if (!product) {
+        alert("Product not found.");
+        return;
+      }
+
+      startEdit(
+        product.id,
+        product.name,
+        product.price,
+        product.image || "",
+        product.description || ""
+      );
+    });
+  });
+
+  document.querySelectorAll("[data-delete-id]").forEach(button => {
+    button.addEventListener("click", () => {
+      deleteProduct(button.dataset.deleteId);
+    });
+  });
+}
 
     productsList.innerHTML = products
       .map(product => {
@@ -745,17 +828,12 @@
             <div class="product-actions">
 
               <button
-                class="edit"
-                onclick="startEdit(
-                  '${escapeHtml(product.id)}',
-                  '${escapeHtml(product.name)}',
-                  '${escapeHtml(product.price)}',
-                  '${escapeHtml(product.image || "")}',
-                  '${escapeHtml(product.description || "")}'
-                )"
-              >
-                ✏️ Edit
-              </button>
+  class="edit"
+  type="button"
+  data-edit-id="${escapeHtml(product.id)}"
+>
+  ✏️ Edit
+</button>
 
               <button
                 class="delete"
@@ -1058,6 +1136,23 @@
     copyShopLink
   );
 
+openShopBtn.addEventListener(
+  "click",
+  () => {
+    if (!currentBusiness) {
+      alert("Please log in first.");
+      return;
+    }
+
+    const url =
+      window.location.origin +
+      "/shop/" +
+      currentBusiness.slug;
+
+    window.open(url, "_blank");
+  }
+);
+  
   deleteShopBtn.addEventListener(
     "click",
     deleteShop
