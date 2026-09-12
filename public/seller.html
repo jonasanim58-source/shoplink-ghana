@@ -478,17 +478,67 @@
 
 
   async function login() {
-    const slug = loginSlug.value.trim();
-    const password = loginPassword.value;
+  const slug = loginSlug.value.trim().toLowerCase();
+  const password = loginPassword.value;
 
-    if (!slug || !password) {
+  loginMessage.innerHTML = "";
+
+  if (!slug || !password) {
+    showMessage(
+      loginMessage,
+      "Please enter your shop slug and password.",
+      true
+    );
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Logging in...";
+
+  try {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        slug: slug,
+        password: password
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
       showMessage(
         loginMessage,
-        "Enter your shop slug and password.",
+        data.error || "Incorrect shop or password.",
         true
       );
       return;
     }
+
+    token = data.token;
+    currentBusiness = data.business;
+
+    showDashboard();
+
+    await loadProducts();
+
+  } catch (error) {
+    console.error("Login error:", error);
+
+    showMessage(
+      loginMessage,
+      "Could not connect to ShopLink Ghana. Please try again.",
+      true
+    );
+
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
+  }
+}
 
     loginBtn.disabled = true;
     loginBtn.textContent = "Logging in...";
@@ -1106,10 +1156,9 @@
   }
 
 
-  loginBtn.addEventListener(
-    "click",
-    login
-  );
+  loginBtn.addEventListener("click", async function () {
+  await login();
+});
 
   createBtn.addEventListener(
     "click",
