@@ -1,69 +1,61 @@
 const express = require("express");
-const path = require("path");
 const crypto = require("crypto");
+const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
+
 const PORT = process.env.PORT || 10000;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
+
 const AUTH_SECRET = process.env.AUTH_SECRET;
-const ADMIN_PASSWORD = process.env.SHOPLINK_ADMIN_PASSWORD || "";
+const ADMIN_PASSWORD =
+  process.env.SHOPLINK_ADMIN_PASSWORD;
 
-if (!SUPABASE_URL) {
-  console.error("ERROR: SUPABASE_URL is missing.");
-}
-
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY is missing.");
-}
-
-if (!AUTH_SECRET) {
-  console.error("ERROR: AUTH_SECRET is missing.");
-}
-
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !AUTH_SECRET) {
-  console.error("ShopLink cannot start correctly until the required environment variables are configured.");
+if (
+  !SUPABASE_URL ||
+  !SUPABASE_SERVICE_ROLE_KEY ||
+  !AUTH_SECRET ||
+  !ADMIN_PASSWORD
+) {
+  console.error(
+    "Missing required environment variables."
+  );
+  process.exit(1);
 }
 
 const supabase = createClient(
   SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      detectSessionInUrl: false
-    }
-  }
+  SUPABASE_SERVICE_ROLE_KEY
 );
 
-app.use(express.json({ limit: "1mb" }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
 
-/* -----------------------------
+app.use(
+  express.static(path.join(__dirname, "public"))
+);
+
+/* =========================================================
    HELPERS
------------------------------ */
+========================================================= */
 
-function slugify(value) {
-  return String(value)
+function slugify(text) {
+  return String(text)
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 50);
-}
-
-function createId() {
-  return crypto.randomUUID();
+    .slice(0, 60);
 }
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
 
   const hash = crypto
-    .scryptSync(String(password), salt, 64)
+    .scryptSync(password, salt, 64)
     .toString("hex");
 
   return `${salt}:${hash}`;
@@ -71,10 +63,6 @@ function hashPassword(password) {
 
 function verifyPassword(password, storedHash) {
   try {
-    if (!storedHash) {
-      return false;
-    }
-
     const parts = storedHash.split(":");
 
     if (parts.length !== 2) {
@@ -82,159 +70,165 @@ function verifyPassword(password, storedHash) {
     }
 
     const salt = parts[0];
-    const savedHash = parts[1];
+    const originalHash = Buffer.from(parts[1], "hex");
 
-    const calculatedHash = crypto
-      .scryptSync(String(password), salt, 64)
-      .toString("hex");
+    const testHash = crypto.scryptSync(
+      password,
+      salt,
+      64
+    );
 
-    const a = Buffer.from(calculatedHash, "hex");
-    const b = Buffer.from(savedHash, "hex");
-
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    return crypto.timingSafeEqual(a, b);
-
+    return crypto.timingSafeEqual(
+      originalHash,
+      testHash
+    );
   } catch (error) {
-    console.error("Password verification error:", error);
     return false;
   }
 }
 
 function createToken(businessId) {
-  const payload = {
-    businessId,
-    expires: Date.now() + 24 * 60 * 60 * 1000
-  };
+  const expires = Date.now() + 24 * 60 * 60 * 1000;
 
-  const encoded = Buffer
-    .from(JSON.stringify(payload))
-    .toString("base64url");
+  const payload = `${businessId}.${expires}`;
 
   const signature = crypto
     .createHmac("sha256", AUTH_SECRET)
-    .update(encoded)
-    .digest("base64url");
+    .update(payload)
+    .digest("hex");
 
-  return `${encoded}.${signature}`;
+  return `${payload}.${signature}`;
 }
 
 function verifyToken(token) {
   try {
-    if (!token) {
-      return null;
-    }
-
     const parts = token.split(".");
 
-    if (parts.length !== 2) {
+    if (parts.length !== 3) {
       return null;
     }
 
-    const encoded = parts[0];
-    const signature = parts[1];
+    const businessId = parts[0];
+    const expires = Number(parts[1]);
+    const signature = parts[2];
 
-    const expected = crypto
+    if (!businessId || !expires || !signature) {
+      return null;
+    }
+
+    if (Date.now() > expires) {
+      return null;
+    }
+
+    const payload = `${businessId}.${expires}`;
+
+    const expectedSignature = crypto
       .createHmac("sha256", AUTH_SECRET)
-      .update(encoded)
-      .digest("base64url");
+      .update(payload)
+      .digest("hex");
 
-    const a = Buffer.from(signature);
-    const b = Buffer.from(expected);
-
-    if (a.length !== b.length) {
-      return null;
-    }
-
-    if (!crypto.timingSafeEqual(a, b)) {
-      return null;
-    }
-
-    const payload = JSON.parse(
-      Buffer.from(encoded, "base64url").toString("utf8")
+    const sigA = Buffer.from(signature, "utf8");
+    const sigB = Buffer.from(
+      expectedSignature,
+      "utf8"
     );
 
-    if (!payload.businessId) {
+    if (sigA.length !== sigB.length) {
       return null;
     }
 
-    if (payload.expires < Date.now()) {
+    if (!crypto.timingSafeEqual(sigA, sigB)) {
       return null;
     }
 
-    return payload;
-
+    return businessId;
   } catch (error) {
     return null;
   }
 }
 
-function getToken(req) {
-  const authorization = req.headers.authorization || "";
+function getTokenFromRequest(req) {
+  const header = req.headers.authorization || "";
 
-  if (!authorization.startsWith("Bearer ")) {
+  if (!header.startsWith("Bearer ")) {
     return null;
   }
 
-  return authorization.substring(7);
+  return header.slice(7);
 }
 
 async function requireAuth(req, res, next) {
   try {
-    const token = getToken(req);
-    const payload = verifyToken(token);
+    const token = getTokenFromRequest(req);
 
-    if (!payload) {
+    if (!token) {
       return res.status(401).json({
-        error: "Seller login required."
+        error: "You must be logged in."
       });
     }
 
-    const { data: business, error } = await supabase
-      .from("businesses")
-      .select("*")
-      .eq("id", payload.businessId)
-      .maybeSingle();
+    const businessId = verifyToken(token);
+
+    if (!businessId) {
+      return res.status(401).json({
+        error: "Your session has expired. Please log in again."
+      });
+    }
+
+    const { data: business, error } =
+      await supabase
+        .from("businesses")
+        .select("*")
+        .eq("id", businessId)
+        .maybeSingle();
 
     if (error) {
-      console.error("Authentication database error:", error);
+      console.error(error);
 
       return res.status(500).json({
-        error: "Database error."
+        error: "Could not verify your shop."
       });
     }
 
     if (!business) {
       return res.status(401).json({
-        error: "Business no longer exists."
+        error: "Shop not found."
       });
     }
 
-    req.business = business;
     req.businessId = business.id;
+    req.business = business;
 
     next();
-
   } catch (error) {
-    console.error("Authentication error:", error);
+    console.error(error);
 
     return res.status(500).json({
-      error: "Authentication failed."
+      error: "Authentication error."
     });
   }
 }
 
-/* -----------------------------
+function checkAdminPassword(password) {
+  if (!password) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(
+    Buffer.from(String(password)),
+    Buffer.from(String(ADMIN_PASSWORD))
+  );
+}
+
+/* =========================================================
    PUBLIC SHOP
------------------------------ */
+========================================================= */
 
 app.get("/api/business/:slug", async (req, res) => {
   try {
     const slug = String(req.params.slug)
-      .trim()
-      .toLowerCase();
+      .toLowerCase()
+      .trim();
 
     const { data: business, error: businessError } =
       await supabase
@@ -259,19 +253,19 @@ app.get("/api/business/:slug", async (req, res) => {
       });
     }
 
-    const { data: products, error: productError } =
+    const { data: products, error: productsError } =
       await supabase
         .from("products")
         .select(
-          "id,business_id,name,price,image,description,created_at"
+          "id,name,price,image,description,created_at"
         )
         .eq("business_id", business.id)
         .order("created_at", {
           ascending: false
         });
 
-    if (productError) {
-      console.error(productError);
+    if (productsError) {
+      console.error(productsError);
 
       return res.status(500).json({
         error: "Could not load products."
@@ -282,7 +276,6 @@ app.get("/api/business/:slug", async (req, res) => {
       business,
       products: products || []
     });
-
   } catch (error) {
     console.error(error);
 
@@ -292,86 +285,87 @@ app.get("/api/business/:slug", async (req, res) => {
   }
 });
 
-/* -----------------------------
-   CREATE SHOP
------------------------------ */
+/* =========================================================
+   ADMIN - CREATE SHOP
+   PUBLIC CREATE SHOP HAS BEEN REMOVED
+========================================================= */
 
-app.post("/api/businesses", async (req, res) => {
+app.post("/api/admin/businesses", async (req, res) => {
   try {
     const {
+      adminPassword,
       name,
       whatsapp,
       location,
       hours,
       description,
       password
-    } = req.body || {};
+    } = req.body;
 
-    if (!name || !whatsapp) {
-      return res.status(400).json({
-        error: "Business name and WhatsApp number are required."
+    if (!checkAdminPassword(adminPassword)) {
+      return res.status(403).json({
+        error: "Incorrect admin password."
       });
     }
 
-    if (!password) {
+    if (
+      !name ||
+      !whatsapp ||
+      !password
+    ) {
       return res.status(400).json({
-        error: "Password is required."
+        error:
+          "Shop name, WhatsApp number and seller password are required."
       });
     }
 
     if (String(password).length < 6) {
       return res.status(400).json({
-        error: "Password must be at least 6 characters."
+        error:
+          "Seller password must be at least 6 characters."
       });
     }
 
     let slug = slugify(name);
 
     if (!slug) {
-      slug = "shop";
-    }
-
-    const { data: existing, error: existingError } =
-      await supabase
-        .from("businesses")
-        .select("slug")
-        .ilike("slug", `${slug}%`);
-
-    if (existingError) {
-      console.error(existingError);
-
-      return res.status(500).json({
-        error: "Could not check shop name."
+      return res.status(400).json({
+        error: "Please enter a valid shop name."
       });
     }
 
-    const existingSlugs = new Set(
-      (existing || []).map(item => item.slug)
-    );
-
-    const originalSlug = slug;
-    let number = 2;
-
-    while (existingSlugs.has(slug)) {
-      slug = `${originalSlug}-${number}`;
-      number++;
-    }
-
-    const business = {
-      id: createId(),
-      name: String(name).trim(),
-      slug,
-      whatsapp: String(whatsapp).replace(/\D/g, ""),
-      location: String(location || "Ghana").trim(),
-      hours: String(hours || "Contact seller").trim(),
-      description: String(description || "").trim(),
-      password_hash: hashPassword(String(password))
-    };
-
-    const { data: created, error } =
+    const { data: existing } =
       await supabase
         .from("businesses")
-        .insert(business)
+        .select("id,slug")
+        .eq("slug", slug)
+        .maybeSingle();
+
+    if (existing) {
+      return res.status(409).json({
+        error:
+          "A shop with this name already exists. Please use a different name."
+      });
+    }
+
+    const passwordHash =
+      hashPassword(password);
+
+    const { data: business, error } =
+      await supabase
+        .from("businesses")
+        .insert({
+          name: String(name).trim(),
+          slug,
+          whatsapp: String(whatsapp).trim(),
+          location:
+            String(location || "Ghana").trim(),
+          hours:
+            String(hours || "Contact seller").trim(),
+          description:
+            String(description || "").trim(),
+          password_hash: passwordHash
+        })
         .select(
           "id,name,slug,whatsapp,location,hours,description,created_at"
         )
@@ -381,16 +375,16 @@ app.post("/api/businesses", async (req, res) => {
       console.error("Create shop error:", error);
 
       return res.status(500).json({
-        error: "Could not create shop: " + error.message
+        error: "Could not create shop."
       });
     }
 
-    return res.json({
+    return res.status(201).json({
       ok: true,
-      business: created,
-      shopUrl: "/shop/" + created.slug
+      business,
+      shopUrl:
+        `/shop/${business.slug}`
     });
-
   } catch (error) {
     console.error(error);
 
@@ -400,23 +394,25 @@ app.post("/api/businesses", async (req, res) => {
   }
 });
 
-/* -----------------------------
-   LOGIN
------------------------------ */
+/* =========================================================
+   SELLER LOGIN
+========================================================= */
 
 app.post("/api/login", async (req, res) => {
   try {
-    const { slug, password } = req.body || {};
+    const {
+      slug,
+      password
+    } = req.body;
 
     if (!slug || !password) {
       return res.status(400).json({
-        error: "Shop slug and password are required."
+        error:
+          "Shop name/slug and password are required."
       });
     }
 
-    const cleanSlug = String(slug)
-      .trim()
-      .toLowerCase();
+    const cleanSlug = slugify(slug);
 
     const { data: business, error } =
       await supabase
@@ -426,39 +422,39 @@ app.post("/api/login", async (req, res) => {
         .maybeSingle();
 
     if (error) {
-      console.error("Login database error:", error);
+      console.error(error);
 
       return res.status(500).json({
-        error: "Database error."
+        error: "Could not log in."
       });
     }
 
     if (!business) {
       return res.status(401).json({
-        error: "Incorrect shop or password."
+        error: "Shop not found or incorrect password."
       });
     }
 
-    let valid = verifyPassword(
-      String(password),
-      business.password_hash
-    );
+    const sellerPasswordCorrect =
+      verifyPassword(
+        String(password),
+        business.password_hash
+      );
+
+    const adminPasswordCorrect =
+      checkAdminPassword(password);
 
     if (
-      !valid &&
-      ADMIN_PASSWORD &&
-      String(password) === String(ADMIN_PASSWORD)
+      !sellerPasswordCorrect &&
+      !adminPasswordCorrect
     ) {
-      valid = true;
-    }
-
-    if (!valid) {
       return res.status(401).json({
-        error: "Incorrect shop or password."
+        error: "Incorrect password."
       });
     }
 
-    const token = createToken(business.id);
+    const token =
+      createToken(business.id);
 
     return res.json({
       ok: true,
@@ -470,31 +466,29 @@ app.post("/api/login", async (req, res) => {
         whatsapp: business.whatsapp,
         location: business.location,
         hours: business.hours,
-        description: business.description
+        description: business.description,
+        created_at: business.created_at
       }
     });
-
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
-      error: "Login failed."
+      error: "Server error while logging in."
     });
   }
 });
 
-/* -----------------------------
+/* =========================================================
    SELLER DASHBOARD
------------------------------ */
+========================================================= */
 
 app.get("/api/me", requireAuth, async (req, res) => {
   try {
     const { data: products, error } =
       await supabase
         .from("products")
-        .select(
-          "id,business_id,name,price,image,description,created_at"
-        )
+        .select("*")
         .eq("business_id", req.businessId)
         .order("created_at", {
           ascending: false
@@ -516,23 +510,23 @@ app.get("/api/me", requireAuth, async (req, res) => {
         whatsapp: req.business.whatsapp,
         location: req.business.location,
         hours: req.business.hours,
-        description: req.business.description
+        description: req.business.description,
+        created_at: req.business.created_at
       },
       products: products || []
     });
-
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
-      error: "Could not load seller dashboard."
+      error: "Server error."
     });
   }
 });
 
-/* -----------------------------
+/* =========================================================
    ADD PRODUCT
------------------------------ */
+========================================================= */
 
 app.post("/api/products", requireAuth, async (req, res) => {
   try {
@@ -541,7 +535,7 @@ app.post("/api/products", requireAuth, async (req, res) => {
       price,
       image,
       description
-    } = req.body || {};
+    } = req.body;
 
     if (!name || price === undefined || price === "") {
       return res.status(400).json({
@@ -549,7 +543,8 @@ app.post("/api/products", requireAuth, async (req, res) => {
       });
     }
 
-    const numericPrice = Number(price);
+    const numericPrice =
+      Number(price);
 
     if (
       !Number.isFinite(numericPrice) ||
@@ -560,326 +555,362 @@ app.post("/api/products", requireAuth, async (req, res) => {
       });
     }
 
-    const product = {
-      id: createId(),
-      business_id: req.businessId,
-      name: String(name).trim(),
-      price: numericPrice,
-      image: String(image || "").trim(),
-      description: String(description || "").trim()
-    };
-
-    const { data: created, error } =
+    const { data: product, error } =
       await supabase
         .from("products")
-        .insert(product)
-        .select("*")
-        .single();
-
-    if (error) {
-      console.error("Add product error:", error);
-
-      return res.status(500).json({
-        error: "Could not add product: " + error.message
-      });
-    }
-
-    return res.json({
-      ok: true,
-      product: created
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error."
-    });
-  }
-});
-
-/* -----------------------------
-   EDIT PRODUCT
------------------------------ */
-
-app.put("/api/products/:id", requireAuth, async (req, res) => {
-  try {
-    const {
-      name,
-      price,
-      image,
-      description
-    } = req.body || {};
-
-    if (!name || price === undefined || price === "") {
-      return res.status(400).json({
-        error: "Product name and price are required."
-      });
-    }
-
-    const numericPrice = Number(price);
-
-    if (
-      !Number.isFinite(numericPrice) ||
-      numericPrice < 0
-    ) {
-      return res.status(400).json({
-        error: "Please enter a valid price."
-      });
-    }
-
-    const { data: existing, error: existingError } =
-      await supabase
-        .from("products")
-        .select("*")
-        .eq("id", req.params.id)
-        .eq("business_id", req.businessId)
-        .maybeSingle();
-
-    if (existingError) {
-      console.error(existingError);
-
-      return res.status(500).json({
-        error: "Could not find product."
-      });
-    }
-
-    if (!existing) {
-      return res.status(404).json({
-        error: "Product not found."
-      });
-    }
-
-    const { data: updated, error } =
-      await supabase
-        .from("products")
-        .update({
+        .insert({
+          business_id: req.businessId,
           name: String(name).trim(),
           price: numericPrice,
-          image: String(image || "").trim(),
-          description: String(description || "").trim()
+          image:
+            String(image || "").trim(),
+          description:
+            String(description || "").trim()
         })
-        .eq("id", req.params.id)
-        .eq("business_id", req.businessId)
         .select("*")
         .single();
 
     if (error) {
-      console.error("Edit product error:", error);
+      console.error(error);
 
       return res.status(500).json({
-        error: "Could not update product."
+        error: "Could not add product."
       });
     }
 
-    return res.json({
+    return res.status(201).json({
       ok: true,
-      product: updated
+      product
     });
-
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
-      error: "Server error."
+      error: "Server error while adding product."
     });
   }
 });
 
-/* -----------------------------
-   DELETE PRODUCT
------------------------------ */
+/* =========================================================
+   EDIT PRODUCT
+========================================================= */
 
-app.delete("/api/products/:id", requireAuth, async (req, res) => {
-  try {
-    const { data: deleted, error } =
-      await supabase
-        .from("products")
-        .delete()
-        .eq("id", req.params.id)
-        .eq("business_id", req.businessId)
-        .select("id");
+app.put(
+  "/api/products/:id",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const productId =
+        req.params.id;
 
-    if (error) {
-      console.error("Delete product error:", error);
+      const {
+        name,
+        price,
+        image,
+        description
+      } = req.body;
 
-      return res.status(500).json({
-        error: "Could not delete product."
-      });
-    }
+      if (
+        !name ||
+        price === undefined ||
+        price === ""
+      ) {
+        return res.status(400).json({
+          error:
+            "Product name and price are required."
+        });
+      }
 
-    if (!deleted || deleted.length === 0) {
-      return res.status(404).json({
-        error: "Product not found."
-      });
-    }
+      const numericPrice =
+        Number(price);
 
-    return res.json({
-      ok: true
-    });
+      if (
+        !Number.isFinite(numericPrice) ||
+        numericPrice < 0
+      ) {
+        return res.status(400).json({
+          error: "Please enter a valid price."
+        });
+      }
 
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error."
-    });
-  }
-});
-
-/* -----------------------------
-   DELETE MY SHOP
------------------------------ */
-
-app.delete("/api/business/me", requireAuth, async (req, res) => {
-  try {
-    const { error } =
-      await supabase
-        .from("businesses")
-        .delete()
-        .eq("id", req.businessId);
-
-    if (error) {
-      console.error("Delete shop error:", error);
-
-      return res.status(500).json({
-        error: "Could not delete shop."
-      });
-    }
-
-    return res.json({
-      ok: true,
-      message: "Shop deleted successfully."
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error while deleting shop."
-    });
-  }
-});
-
-/* -----------------------------
-   ADMIN PASSWORD RESET
------------------------------ */
-
-app.post("/api/admin/reset-password", async (req, res) => {
-  try {
-    const {
-      adminPassword,
-      slug,
-      newPassword
-    } = req.body || {};
-
-    if (!ADMIN_PASSWORD) {
-      return res.status(500).json({
-        error: "SHOPLINK_ADMIN_PASSWORD is not configured."
-      });
-    }
-
-    if (
-      !adminPassword ||
-      String(adminPassword) !== String(ADMIN_PASSWORD)
-    ) {
-      return res.status(401).json({
-        error: "Incorrect admin password."
-      });
-    }
-
-    if (!slug || !newPassword) {
-      return res.status(400).json({
-        error: "Shop slug and new password are required."
-      });
-    }
-
-    if (String(newPassword).length < 6) {
-      return res.status(400).json({
-        error: "New password must be at least 6 characters."
-      });
-    }
-
-    const { data: business, error: findError } =
-      await supabase
-        .from("businesses")
-        .select("id,name,slug")
-        .eq(
-          "slug",
-          String(slug).trim().toLowerCase()
-        )
-        .maybeSingle();
-
-    if (findError) {
-      console.error(findError);
-
-      return res.status(500).json({
-        error: "Database error."
-      });
-    }
-
-    if (!business) {
-      return res.status(404).json({
-        error: "Shop not found."
-      });
-    }
-
-    const { error: updateError } =
-      await supabase
-        .from("businesses")
-        .update({
-          password_hash: hashPassword(
-            String(newPassword)
+      const { data: product, error } =
+        await supabase
+          .from("products")
+          .update({
+            name: String(name).trim(),
+            price: numericPrice,
+            image:
+              String(image || "").trim(),
+            description:
+              String(description || "").trim()
+          })
+          .eq("id", productId)
+          .eq(
+            "business_id",
+            req.businessId
           )
-        })
-        .eq("id", business.id);
+          .select("*")
+          .maybeSingle();
 
-    if (updateError) {
-      console.error(updateError);
+      if (error) {
+        console.error(error);
+
+        return res.status(500).json({
+          error:
+            "Could not update product."
+        });
+      }
+
+      if (!product) {
+        return res.status(404).json({
+          error: "Product not found."
+        });
+      }
+
+      return res.json({
+        ok: true,
+        product
+      });
+    } catch (error) {
+      console.error(error);
 
       return res.status(500).json({
-        error: "Could not reset password."
+        error:
+          "Server error while updating product."
       });
     }
-
-    return res.json({
-      ok: true,
-      message: "Password successfully reset."
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error."
-    });
   }
-});
+);
 
-/* -----------------------------
+/* =========================================================
+   DELETE PRODUCT
+========================================================= */
+
+app.delete(
+  "/api/products/:id",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const productId =
+        req.params.id;
+
+      const { data: deletedProduct, error } =
+        await supabase
+          .from("products")
+          .delete()
+          .eq("id", productId)
+          .eq(
+            "business_id",
+            req.businessId
+          )
+          .select("id")
+          .maybeSingle();
+
+      if (error) {
+        console.error(error);
+
+        return res.status(500).json({
+          error:
+            "Could not delete product."
+        });
+      }
+
+      if (!deletedProduct) {
+        return res.status(404).json({
+          error: "Product not found."
+        });
+      }
+
+      return res.json({
+        ok: true,
+        message: "Product deleted successfully."
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        error:
+          "Server error while deleting product."
+      });
+    }
+  }
+);
+
+/* =========================================================
+   DELETE SHOP
+========================================================= */
+
+app.delete(
+  "/api/business/me",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const { error } =
+        await supabase
+          .from("businesses")
+          .delete()
+          .eq("id", req.businessId);
+
+      if (error) {
+        console.error(
+          "Delete shop error:",
+          error
+        );
+
+        return res.status(500).json({
+          error:
+            "Could not delete shop."
+        });
+      }
+
+      return res.json({
+        ok: true,
+        message:
+          "Shop deleted successfully."
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        error:
+          "Server error while deleting shop."
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN RESET SELLER PASSWORD
+========================================================= */
+
+app.post(
+  "/api/admin/reset-password",
+  async (req, res) => {
+    try {
+      const {
+        adminPassword,
+        slug,
+        newPassword
+      } = req.body;
+
+      if (
+        !checkAdminPassword(adminPassword)
+      ) {
+        return res.status(403).json({
+          error:
+            "Incorrect admin password."
+        });
+      }
+
+      if (!slug || !newPassword) {
+        return res.status(400).json({
+          error:
+            "Shop slug and new password are required."
+        });
+      }
+
+      if (
+        String(newPassword).length < 6
+      ) {
+        return res.status(400).json({
+          error:
+            "New password must be at least 6 characters."
+        });
+      }
+
+      const cleanSlug =
+        slugify(slug);
+
+      const passwordHash =
+        hashPassword(
+          String(newPassword)
+        );
+
+      const { data: business, error } =
+        await supabase
+          .from("businesses")
+          .update({
+            password_hash:
+              passwordHash
+          })
+          .eq("slug", cleanSlug)
+          .select(
+            "id,name,slug"
+          )
+          .maybeSingle();
+
+      if (error) {
+        console.error(error);
+
+        return res.status(500).json({
+          error:
+            "Could not reset password."
+        });
+      }
+
+      if (!business) {
+        return res.status(404).json({
+          error: "Shop not found."
+        });
+      }
+
+      return res.json({
+        ok: true,
+        message:
+          "Seller password reset successfully.",
+        business
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        error:
+          "Server error while resetting password."
+      });
+    }
+  }
+);
+
+/* =========================================================
    PAGES
------------------------------ */
+========================================================= */
 
 app.get("/shop/:slug", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "public", "shop.html")
+    path.join(
+      __dirname,
+      "public",
+      "shop.html"
+    )
   );
 });
 
 app.get("/seller", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "public", "seller.html")
+    path.join(
+      __dirname,
+      "public",
+      "seller.html"
+    )
   );
 });
 
-app.get("*splat", (req, res) => {
+app.get("*", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "public", "index.html")
+    path.join(
+      __dirname,
+      "public",
+      "index.html"
+    )
   );
 });
+
+/* =========================================================
+   START SERVER
+========================================================= */
 
 app.listen(PORT, () => {
   console.log(
-    "ShopLink Ghana running on port " + PORT
+    `ShopLink Ghana running on port ${PORT}`
   );
 });
