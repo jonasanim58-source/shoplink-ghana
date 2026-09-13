@@ -15,6 +15,10 @@ const AUTH_SECRET = process.env.AUTH_SECRET;
 const ADMIN_PASSWORD =
   process.env.SHOPLINK_ADMIN_PASSWORD;
 
+/* =========================================================
+   CHECK ENVIRONMENT VARIABLES
+========================================================= */
+
 if (
   !SUPABASE_URL ||
   !SUPABASE_SERVICE_ROLE_KEY ||
@@ -24,18 +28,49 @@ if (
   console.error(
     "Missing required environment variables."
   );
+
+  console.error(
+    "Required:"
+  );
+
+  console.error(
+    "SUPABASE_URL"
+  );
+
+  console.error(
+    "SUPABASE_SERVICE_ROLE_KEY"
+  );
+
+  console.error(
+    "AUTH_SECRET"
+  );
+
+  console.error(
+    "SHOPLINK_ADMIN_PASSWORD"
+  );
+
   process.exit(1);
 }
+
+/* =========================================================
+   SUPABASE
+========================================================= */
 
 const supabase = createClient(
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY
 );
 
+/* =========================================================
+   EXPRESS
+========================================================= */
+
 app.use(express.json());
 
 app.use(
-  express.static(path.join(__dirname, "public"))
+  express.static(
+    path.join(__dirname, "public")
+  )
 );
 
 /* =========================================================
@@ -51,545 +86,897 @@ function slugify(text) {
     .slice(0, 60);
 }
 
-function hashPassword(password) {
-  const salt = crypto.randomBytes(16).toString("hex");
+/* =========================================================
+   PASSWORD HASHING
+========================================================= */
 
-  const hash = crypto
-    .scryptSync(password, salt, 64)
-    .toString("hex");
+function hashPassword(password) {
+  const salt =
+    crypto.randomBytes(16).toString("hex");
+
+  const hash =
+    crypto.scryptSync(
+      String(password),
+      salt,
+      64
+    ).toString("hex");
 
   return `${salt}:${hash}`;
 }
 
-function verifyPassword(password, storedHash) {
+function verifyPassword(
+  password,
+  storedHash
+) {
   try {
-    const parts = storedHash.split(":");
+    if (!storedHash) {
+      return false;
+    }
+
+    const parts =
+      String(storedHash).split(":");
 
     if (parts.length !== 2) {
       return false;
     }
 
     const salt = parts[0];
-    const originalHash = Buffer.from(parts[1], "hex");
 
-    const testHash = crypto.scryptSync(
-      password,
-      salt,
-      64
-    );
+    const originalHash =
+      Buffer.from(
+        parts[1],
+        "hex"
+      );
+
+    const testHash =
+      crypto.scryptSync(
+        String(password),
+        salt,
+        64
+      );
+
+    if (
+      originalHash.length !==
+      testHash.length
+    ) {
+      return false;
+    }
 
     return crypto.timingSafeEqual(
       originalHash,
       testHash
     );
   } catch (error) {
+    console.error(
+      "Password verification error:",
+      error
+    );
+
     return false;
   }
 }
 
+/* =========================================================
+   ADMIN PASSWORD CHECK
+========================================================= */
+
+function checkAdminPassword(password) {
+  if (
+    password === undefined ||
+    password === null
+  ) {
+    return false;
+  }
+
+  const supplied =
+    Buffer.from(
+      String(password),
+      "utf8"
+    );
+
+  const actual =
+    Buffer.from(
+      String(ADMIN_PASSWORD),
+      "utf8"
+    );
+
+  if (
+    supplied.length !==
+    actual.length
+  ) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(
+    supplied,
+    actual
+  );
+}
+
+/* =========================================================
+   LOGIN TOKEN
+========================================================= */
+
 function createToken(businessId) {
-  const expires = Date.now() + 24 * 60 * 60 * 1000;
+  const expires =
+    Date.now() +
+    24 * 60 * 60 * 1000;
 
-  const payload = `${businessId}.${expires}`;
+  const payload =
+    `${businessId}.${expires}`;
 
-  const signature = crypto
-    .createHmac("sha256", AUTH_SECRET)
-    .update(payload)
-    .digest("hex");
+  const signature =
+    crypto
+      .createHmac(
+        "sha256",
+        AUTH_SECRET
+      )
+      .update(payload)
+      .digest("hex");
 
   return `${payload}.${signature}`;
 }
 
 function verifyToken(token) {
   try {
-    const parts = token.split(".");
+    if (!token) {
+      return null;
+    }
+
+    const parts =
+      String(token).split(".");
 
     if (parts.length !== 3) {
       return null;
     }
 
-    const businessId = parts[0];
-    const expires = Number(parts[1]);
-    const signature = parts[2];
+    const businessId =
+      parts[0];
 
-    if (!businessId || !expires || !signature) {
+    const expires =
+      Number(parts[1]);
+
+    const signature =
+      parts[2];
+
+    if (
+      !businessId ||
+      !expires ||
+      !signature
+    ) {
       return null;
     }
 
-    if (Date.now() > expires) {
+    if (
+      Date.now() > expires
+    ) {
       return null;
     }
 
-    const payload = `${businessId}.${expires}`;
+    const payload =
+      `${businessId}.${expires}`;
 
-    const expectedSignature = crypto
-      .createHmac("sha256", AUTH_SECRET)
-      .update(payload)
-      .digest("hex");
+    const expectedSignature =
+      crypto
+        .createHmac(
+          "sha256",
+          AUTH_SECRET
+        )
+        .update(payload)
+        .digest("hex");
 
-    const sigA = Buffer.from(signature, "utf8");
-    const sigB = Buffer.from(
-      expectedSignature,
-      "utf8"
-    );
+    const suppliedBuffer =
+      Buffer.from(
+        signature,
+        "utf8"
+      );
 
-    if (sigA.length !== sigB.length) {
+    const expectedBuffer =
+      Buffer.from(
+        expectedSignature,
+        "utf8"
+      );
+
+    if (
+      suppliedBuffer.length !==
+      expectedBuffer.length
+    ) {
       return null;
     }
 
-    if (!crypto.timingSafeEqual(sigA, sigB)) {
+    if (
+      !crypto.timingSafeEqual(
+        suppliedBuffer,
+        expectedBuffer
+      )
+    ) {
       return null;
     }
 
     return businessId;
   } catch (error) {
+    console.error(
+      "Token verification error:",
+      error
+    );
+
     return null;
   }
 }
 
-function getTokenFromRequest(req) {
-  const header = req.headers.authorization || "";
+/* =========================================================
+   GET TOKEN
+========================================================= */
 
-  if (!header.startsWith("Bearer ")) {
+function getTokenFromRequest(req) {
+  const header =
+    req.headers.authorization || "";
+
+  if (
+    !header.startsWith(
+      "Bearer "
+    )
+  ) {
     return null;
   }
 
   return header.slice(7);
 }
 
-async function requireAuth(req, res, next) {
+/* =========================================================
+   AUTH MIDDLEWARE
+========================================================= */
+
+async function requireAuth(
+  req,
+  res,
+  next
+) {
   try {
-    const token = getTokenFromRequest(req);
+    const token =
+      getTokenFromRequest(req);
 
     if (!token) {
       return res.status(401).json({
-        error: "You must be logged in."
+        error:
+          "You must be logged in."
       });
     }
 
-    const businessId = verifyToken(token);
+    const businessId =
+      verifyToken(token);
 
     if (!businessId) {
       return res.status(401).json({
-        error: "Your session has expired. Please log in again."
+        error:
+          "Your session has expired. Please log in again."
       });
     }
 
-    const { data: business, error } =
+    const {
+      data: business,
+      error
+    } =
       await supabase
         .from("businesses")
         .select("*")
-        .eq("id", businessId)
+        .eq(
+          "id",
+          businessId
+        )
         .maybeSingle();
 
     if (error) {
       console.error(error);
 
       return res.status(500).json({
-        error: "Could not verify your shop."
+        error:
+          "Could not verify your shop."
       });
     }
 
     if (!business) {
       return res.status(401).json({
-        error: "Shop not found."
+        error:
+          "Shop not found."
       });
     }
 
-    req.businessId = business.id;
-    req.business = business;
+    req.businessId =
+      business.id;
+
+    req.business =
+      business;
 
     next();
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
-      error: "Authentication error."
+      error:
+        "Authentication error."
     });
   }
-}
-
-function checkAdminPassword(password) {
-  if (!password) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(
-    Buffer.from(String(password)),
-    Buffer.from(String(ADMIN_PASSWORD))
-  );
 }
 
 /* =========================================================
    PUBLIC SHOP
 ========================================================= */
 
-app.get("/api/business/:slug", async (req, res) => {
-  try {
-    const slug = String(req.params.slug)
-      .toLowerCase()
-      .trim();
-
-    const { data: business, error: businessError } =
-      await supabase
-        .from("businesses")
-        .select(
-          "id,name,slug,whatsapp,location,hours,description,created_at"
+app.get(
+  "/api/business/:slug",
+  async (req, res) => {
+    try {
+      const slug =
+        String(
+          req.params.slug
         )
-        .eq("slug", slug)
-        .maybeSingle();
+          .toLowerCase()
+          .trim();
 
-    if (businessError) {
-      console.error(businessError);
+      const {
+        data: business,
+        error: businessError
+      } =
+        await supabase
+          .from("businesses")
+          .select(
+            "id,name,slug,whatsapp,location,hours,description,created_at"
+          )
+          .eq(
+            "slug",
+            slug
+          )
+          .maybeSingle();
 
-      return res.status(500).json({
-        error: "Could not load shop."
-      });
-    }
+      if (businessError) {
+        console.error(
+          businessError
+        );
 
-    if (!business) {
-      return res.status(404).json({
-        error: "Shop not found."
-      });
-    }
-
-    const { data: products, error: productsError } =
-      await supabase
-        .from("products")
-        .select(
-          "id,name,price,image,description,created_at"
-        )
-        .eq("business_id", business.id)
-        .order("created_at", {
-          ascending: false
+        return res.status(500).json({
+          error:
+            "Could not load shop."
         });
+      }
 
-    if (productsError) {
-      console.error(productsError);
+      if (!business) {
+        return res.status(404).json({
+          error:
+            "Shop not found."
+        });
+      }
+
+      const {
+        data: products,
+        error: productsError
+      } =
+        await supabase
+          .from("products")
+          .select(
+            "id,name,price,image,description,created_at"
+          )
+          .eq(
+            "business_id",
+            business.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
+
+      if (productsError) {
+        console.error(
+          productsError
+        );
+
+        return res.status(500).json({
+          error:
+            "Could not load products."
+        });
+      }
+
+      return res.json({
+        business,
+        products:
+          products || []
+      });
+    } catch (error) {
+      console.error(error);
 
       return res.status(500).json({
-        error: "Could not load products."
+        error:
+          "Server error."
       });
     }
-
-    return res.json({
-      business,
-      products: products || []
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error."
-    });
   }
-});
+);
 
 /* =========================================================
-   ADMIN - CREATE SHOP
-   PUBLIC CREATE SHOP HAS BEEN REMOVED
+   ADMIN CREATE SHOP
 ========================================================= */
 
-app.post("/api/admin/businesses", async (req, res) => {
-  try {
-    const {
-      adminPassword,
-      name,
-      whatsapp,
-      location,
-      hours,
-      description,
-      password
-    } = req.body;
+app.post(
+  "/api/admin/businesses",
+  async (req, res) => {
+    try {
+      const {
+        adminPassword,
+        name,
+        whatsapp,
+        location,
+        hours,
+        description,
+        password
+      } = req.body;
 
-    if (!checkAdminPassword(adminPassword)) {
-      return res.status(403).json({
-        error: "Incorrect admin password."
-      });
-    }
+      /* -----------------------------------------------
+         ADMIN PASSWORD
+      ------------------------------------------------ */
 
-    if (
-      !name ||
-      !whatsapp ||
-      !password
-    ) {
-      return res.status(400).json({
-        error:
-          "Shop name, WhatsApp number and seller password are required."
-      });
-    }
-
-    if (String(password).length < 6) {
-      return res.status(400).json({
-        error:
-          "Seller password must be at least 6 characters."
-      });
-    }
-
-    let slug = slugify(name);
-
-    if (!slug) {
-      return res.status(400).json({
-        error: "Please enter a valid shop name."
-      });
-    }
-
-    const { data: existing } =
-      await supabase
-        .from("businesses")
-        .select("id,slug")
-        .eq("slug", slug)
-        .maybeSingle();
-
-    if (existing) {
-      return res.status(409).json({
-        error:
-          "A shop with this name already exists. Please use a different name."
-      });
-    }
-
-    const passwordHash =
-      hashPassword(password);
-
-    const { data: business, error } =
-      await supabase
-        .from("businesses")
-        .insert({
-          name: String(name).trim(),
-          slug,
-          whatsapp: String(whatsapp).trim(),
-          location:
-            String(location || "Ghana").trim(),
-          hours:
-            String(hours || "Contact seller").trim(),
-          description:
-            String(description || "").trim(),
-          password_hash: passwordHash
-        })
-        .select(
-          "id,name,slug,whatsapp,location,hours,description,created_at"
+      if (
+        !checkAdminPassword(
+          adminPassword
         )
-        .single();
+      ) {
+        return res.status(403).json({
+          error:
+            "Incorrect admin password."
+        });
+      }
 
-    if (error) {
-      console.error("Create shop error:", error);
+      /* -----------------------------------------------
+         REQUIRED FIELDS
+      ------------------------------------------------ */
+
+      if (
+        !name ||
+        !whatsapp ||
+        !password
+      ) {
+        return res.status(400).json({
+          error:
+            "Shop name, WhatsApp number and seller password are required."
+        });
+      }
+
+      if (
+        String(password).length < 6
+      ) {
+        return res.status(400).json({
+          error:
+            "Seller password must be at least 6 characters."
+        });
+      }
+
+      /* -----------------------------------------------
+         CREATE SLUG
+      ------------------------------------------------ */
+
+      const slug =
+        slugify(name);
+
+      if (!slug) {
+        return res.status(400).json({
+          error:
+            "Please enter a valid shop name."
+        });
+      }
+
+      /* -----------------------------------------------
+         CHECK EXISTING SHOP
+      ------------------------------------------------ */
+
+      const {
+        data: existing,
+        error: existingError
+      } =
+        await supabase
+          .from("businesses")
+          .select(
+            "id,slug"
+          )
+          .eq(
+            "slug",
+            slug
+          )
+          .maybeSingle();
+
+      if (existingError) {
+        console.error(
+          existingError
+        );
+
+        return res.status(500).json({
+          error:
+            "Could not check existing shops."
+        });
+      }
+
+      if (existing) {
+        return res.status(409).json({
+          error:
+            "A shop with this name already exists. Please use a different name."
+        });
+      }
+
+      /* -----------------------------------------------
+         HASH SELLER PASSWORD
+      ------------------------------------------------ */
+
+      const passwordHash =
+        hashPassword(
+          password
+        );
+
+      /* -----------------------------------------------
+         CREATE SHOP
+      ------------------------------------------------ */
+
+      const {
+        data: business,
+        error
+      } =
+        await supabase
+          .from("businesses")
+          .insert({
+            name:
+              String(name).trim(),
+
+            slug,
+
+            whatsapp:
+              String(
+                whatsapp
+              ).trim(),
+
+            location:
+              String(
+                location ||
+                  "Ghana"
+              ).trim(),
+
+            hours:
+              String(
+                hours ||
+                  "Contact seller"
+              ).trim(),
+
+            description:
+              String(
+                description ||
+                  ""
+              ).trim(),
+
+            password_hash:
+              passwordHash
+          })
+          .select(
+            "id,name,slug,whatsapp,location,hours,description,created_at"
+          )
+          .single();
+
+      if (error) {
+        console.error(
+          "Create shop error:",
+          error
+        );
+
+        return res.status(500).json({
+          error:
+            "Could not create shop."
+        });
+      }
+
+      return res.status(201).json({
+        ok: true,
+
+        business,
+
+        shopUrl:
+          `/shop/${business.slug}`
+      });
+    } catch (error) {
+      console.error(error);
 
       return res.status(500).json({
-        error: "Could not create shop."
+        error:
+          "Server error while creating shop."
       });
     }
-
-    return res.status(201).json({
-      ok: true,
-      business,
-      shopUrl:
-        `/shop/${business.slug}`
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error while creating shop."
-    });
   }
-});
+);
 
 /* =========================================================
    SELLER LOGIN
 ========================================================= */
 
-app.post("/api/login", async (req, res) => {
-  try {
-    const {
-      slug,
-      password
-    } = req.body;
+app.post(
+  "/api/login",
+  async (req, res) => {
+    try {
+      const {
+        slug,
+        password
+      } = req.body;
 
-    if (!slug || !password) {
-      return res.status(400).json({
-        error:
-          "Shop name/slug and password are required."
+      if (
+        !slug ||
+        !password
+      ) {
+        return res.status(400).json({
+          error:
+            "Shop name/slug and password are required."
+        });
+      }
+
+      const cleanSlug =
+        slugify(slug);
+
+      const {
+        data: business,
+        error
+      } =
+        await supabase
+          .from("businesses")
+          .select("*")
+          .eq(
+            "slug",
+            cleanSlug
+          )
+          .maybeSingle();
+
+      if (error) {
+        console.error(error);
+
+        return res.status(500).json({
+          error:
+            "Could not log in."
+        });
+      }
+
+      if (!business) {
+        return res.status(401).json({
+          error:
+            "Shop not found or incorrect password."
+        });
+      }
+
+      const sellerPasswordCorrect =
+        verifyPassword(
+          password,
+          business.password_hash
+        );
+
+      if (
+        !sellerPasswordCorrect
+      ) {
+        return res.status(401).json({
+          error:
+            "Incorrect password."
+        });
+      }
+
+      const token =
+        createToken(
+          business.id
+        );
+
+      return res.json({
+        ok: true,
+
+        token,
+
+        business: {
+          id:
+            business.id,
+
+          name:
+            business.name,
+
+          slug:
+            business.slug,
+
+          whatsapp:
+            business.whatsapp,
+
+          location:
+            business.location,
+
+          hours:
+            business.hours,
+
+          description:
+            business.description,
+
+          created_at:
+            business.created_at
+        }
       });
-    }
-
-    const cleanSlug = slugify(slug);
-
-    const { data: business, error } =
-      await supabase
-        .from("businesses")
-        .select("*")
-        .eq("slug", cleanSlug)
-        .maybeSingle();
-
-    if (error) {
+    } catch (error) {
       console.error(error);
 
       return res.status(500).json({
-        error: "Could not log in."
+        error:
+          "Server error while logging in."
       });
     }
-
-    if (!business) {
-      return res.status(401).json({
-        error: "Shop not found or incorrect password."
-      });
-    }
-
-    const sellerPasswordCorrect =
-      verifyPassword(
-        String(password),
-        business.password_hash
-      );
-
-    const adminPasswordCorrect =
-      checkAdminPassword(password);
-
-    if (
-      !sellerPasswordCorrect &&
-      !adminPasswordCorrect
-    ) {
-      return res.status(401).json({
-        error: "Incorrect password."
-      });
-    }
-
-    const token =
-      createToken(business.id);
-
-    return res.json({
-      ok: true,
-      token,
-      business: {
-        id: business.id,
-        name: business.name,
-        slug: business.slug,
-        whatsapp: business.whatsapp,
-        location: business.location,
-        hours: business.hours,
-        description: business.description,
-        created_at: business.created_at
-      }
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error while logging in."
-    });
   }
-});
+);
 
 /* =========================================================
    SELLER DASHBOARD
 ========================================================= */
 
-app.get("/api/me", requireAuth, async (req, res) => {
-  try {
-    const { data: products, error } =
-      await supabase
-        .from("products")
-        .select("*")
-        .eq("business_id", req.businessId)
-        .order("created_at", {
-          ascending: false
-        });
+app.get(
+  "/api/me",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const {
+        data: products,
+        error
+      } =
+        await supabase
+          .from("products")
+          .select("*")
+          .eq(
+            "business_id",
+            req.businessId
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
 
-    if (error) {
+      if (error) {
+        console.error(error);
+
+        return res.status(500).json({
+          error:
+            "Could not load products."
+        });
+      }
+
+      return res.json({
+        business: {
+          id:
+            req.business.id,
+
+          name:
+            req.business.name,
+
+          slug:
+            req.business.slug,
+
+          whatsapp:
+            req.business.whatsapp,
+
+          location:
+            req.business.location,
+
+          hours:
+            req.business.hours,
+
+          description:
+            req.business.description,
+
+          created_at:
+            req.business.created_at
+        },
+
+        products:
+          products || []
+      });
+    } catch (error) {
       console.error(error);
 
       return res.status(500).json({
-        error: "Could not load products."
+        error:
+          "Server error."
       });
     }
-
-    return res.json({
-      business: {
-        id: req.business.id,
-        name: req.business.name,
-        slug: req.business.slug,
-        whatsapp: req.business.whatsapp,
-        location: req.business.location,
-        hours: req.business.hours,
-        description: req.business.description,
-        created_at: req.business.created_at
-      },
-      products: products || []
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error."
-    });
   }
-});
+);
 
 /* =========================================================
    ADD PRODUCT
 ========================================================= */
 
-app.post("/api/products", requireAuth, async (req, res) => {
-  try {
-    const {
-      name,
-      price,
-      image,
-      description
-    } = req.body;
+app.post(
+  "/api/products",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const {
+        name,
+        price,
+        image,
+        description
+      } = req.body;
 
-    if (!name || price === undefined || price === "") {
-      return res.status(400).json({
-        error: "Product name and price are required."
+      if (
+        !name ||
+        price === undefined ||
+        price === ""
+      ) {
+        return res.status(400).json({
+          error:
+            "Product name and price are required."
+        });
+      }
+
+      const numericPrice =
+        Number(price);
+
+      if (
+        !Number.isFinite(
+          numericPrice
+        ) ||
+        numericPrice < 0
+      ) {
+        return res.status(400).json({
+          error:
+            "Please enter a valid price."
+        });
+      }
+
+      const {
+        data: product,
+        error
+      } =
+        await supabase
+          .from("products")
+          .insert({
+            business_id:
+              req.businessId,
+
+            name:
+              String(name).trim(),
+
+            price:
+              numericPrice,
+
+            image:
+              String(
+                image || ""
+              ).trim(),
+
+            description:
+              String(
+                description || ""
+              ).trim()
+          })
+          .select("*")
+          .single();
+
+      if (error) {
+        console.error(error);
+
+        return res.status(500).json({
+          error:
+            "Could not add product."
+        });
+      }
+
+      return res.status(201).json({
+        ok: true,
+        product
       });
-    }
-
-    const numericPrice =
-      Number(price);
-
-    if (
-      !Number.isFinite(numericPrice) ||
-      numericPrice < 0
-    ) {
-      return res.status(400).json({
-        error: "Please enter a valid price."
-      });
-    }
-
-    const { data: product, error } =
-      await supabase
-        .from("products")
-        .insert({
-          business_id: req.businessId,
-          name: String(name).trim(),
-          price: numericPrice,
-          image:
-            String(image || "").trim(),
-          description:
-            String(description || "").trim()
-        })
-        .select("*")
-        .single();
-
-    if (error) {
+    } catch (error) {
       console.error(error);
 
       return res.status(500).json({
-        error: "Could not add product."
+        error:
+          "Server error while adding product."
       });
     }
-
-    return res.status(201).json({
-      ok: true,
-      product
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Server error while adding product."
-    });
   }
-});
+);
 
 /* =========================================================
    EDIT PRODUCT
@@ -625,26 +1012,44 @@ app.put(
         Number(price);
 
       if (
-        !Number.isFinite(numericPrice) ||
+        !Number.isFinite(
+          numericPrice
+        ) ||
         numericPrice < 0
       ) {
         return res.status(400).json({
-          error: "Please enter a valid price."
+          error:
+            "Please enter a valid price."
         });
       }
 
-      const { data: product, error } =
+      const {
+        data: product,
+        error
+      } =
         await supabase
           .from("products")
           .update({
-            name: String(name).trim(),
-            price: numericPrice,
+            name:
+              String(name).trim(),
+
+            price:
+              numericPrice,
+
             image:
-              String(image || "").trim(),
+              String(
+                image || ""
+              ).trim(),
+
             description:
-              String(description || "").trim()
+              String(
+                description || ""
+              ).trim()
           })
-          .eq("id", productId)
+          .eq(
+            "id",
+            productId
+          )
           .eq(
             "business_id",
             req.businessId
@@ -663,7 +1068,8 @@ app.put(
 
       if (!product) {
         return res.status(404).json({
-          error: "Product not found."
+          error:
+            "Product not found."
         });
       }
 
@@ -694,11 +1100,17 @@ app.delete(
       const productId =
         req.params.id;
 
-      const { data: deletedProduct, error } =
+      const {
+        data: deletedProduct,
+        error
+      } =
         await supabase
           .from("products")
           .delete()
-          .eq("id", productId)
+          .eq(
+            "id",
+            productId
+          )
           .eq(
             "business_id",
             req.businessId
@@ -717,13 +1129,16 @@ app.delete(
 
       if (!deletedProduct) {
         return res.status(404).json({
-          error: "Product not found."
+          error:
+            "Product not found."
         });
       }
 
       return res.json({
         ok: true,
-        message: "Product deleted successfully."
+
+        message:
+          "Product deleted successfully."
       });
     } catch (error) {
       console.error(error);
@@ -745,16 +1160,52 @@ app.delete(
   requireAuth,
   async (req, res) => {
     try {
-      const { error } =
+      /*
+        This assumes your Supabase database has
+        ON DELETE CASCADE configured from products.business_id
+        to businesses.id.
+
+        If it does not, we delete products first.
+      */
+
+      const {
+        error: productsError
+      } =
+        await supabase
+          .from("products")
+          .delete()
+          .eq(
+            "business_id",
+            req.businessId
+          );
+
+      if (productsError) {
+        console.error(
+          "Delete products error:",
+          productsError
+        );
+
+        return res.status(500).json({
+          error:
+            "Could not delete the shop products."
+        });
+      }
+
+      const {
+        error: businessError
+      } =
         await supabase
           .from("businesses")
           .delete()
-          .eq("id", req.businessId);
+          .eq(
+            "id",
+            req.businessId
+          );
 
-      if (error) {
+      if (businessError) {
         console.error(
           "Delete shop error:",
-          error
+          businessError
         );
 
         return res.status(500).json({
@@ -765,8 +1216,9 @@ app.delete(
 
       return res.json({
         ok: true,
+
         message:
-          "Shop deleted successfully."
+          "Shop and all products deleted successfully."
       });
     } catch (error) {
       console.error(error);
@@ -794,7 +1246,9 @@ app.post(
       } = req.body;
 
       if (
-        !checkAdminPassword(adminPassword)
+        !checkAdminPassword(
+          adminPassword
+        )
       ) {
         return res.status(403).json({
           error:
@@ -802,7 +1256,10 @@ app.post(
         });
       }
 
-      if (!slug || !newPassword) {
+      if (
+        !slug ||
+        !newPassword
+      ) {
         return res.status(400).json({
           error:
             "Shop slug and new password are required."
@@ -823,17 +1280,23 @@ app.post(
 
       const passwordHash =
         hashPassword(
-          String(newPassword)
+          newPassword
         );
 
-      const { data: business, error } =
+      const {
+        data: business,
+        error
+      } =
         await supabase
           .from("businesses")
           .update({
             password_hash:
               passwordHash
           })
-          .eq("slug", cleanSlug)
+          .eq(
+            "slug",
+            cleanSlug
+          )
           .select(
             "id,name,slug"
           )
@@ -850,14 +1313,17 @@ app.post(
 
       if (!business) {
         return res.status(404).json({
-          error: "Shop not found."
+          error:
+            "Shop not found."
         });
       }
 
       return res.json({
         ok: true,
+
         message:
           "Seller password reset successfully.",
+
         business
       });
     } catch (error) {
@@ -875,42 +1341,74 @@ app.post(
    PAGES
 ========================================================= */
 
-app.get("/shop/:slug", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "shop.html"
-    )
-  );
-});
+/*
+  Public shop page
+*/
 
-app.get("/seller", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "seller.html"
-    )
-  );
-});
+app.get(
+  "/shop/:slug",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        __dirname,
+        "public",
+        "shop.html"
+      )
+    );
+  }
+);
 
-app.get("*", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
-  );
-});
+/*
+  Seller dashboard
+*/
+
+app.get(
+  "/seller",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        __dirname,
+        "public",
+        "seller.html"
+      )
+    );
+  }
+);
+
+/* =========================================================
+   DEFAULT PAGE
+========================================================= */
+
+/*
+  IMPORTANT:
+  Do NOT use app.get("*") here.
+
+  Newer Express versions reject "*".
+  This middleware handles all remaining
+  browser requests instead.
+*/
+
+app.use(
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        __dirname,
+        "public",
+        "index.html"
+      )
+    );
+  }
+);
 
 /* =========================================================
    START SERVER
 ========================================================= */
 
-app.listen(PORT, () => {
-  console.log(
-    `ShopLink Ghana running on port ${PORT}`
-  );
-});
+app.listen(
+  PORT,
+  () => {
+    console.log(
+      `ShopLink Ghana running on port ${PORT}`
+    );
+  }
+);
