@@ -1,10 +1,13 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-  <title>Seller Dashboard — ShopLink Ghana</title>
+  <title>ShopLink Ghana - Seller</title>
 
   <style>
     * {
@@ -14,35 +17,40 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f5f7fb;
+      background: #f4f6f8;
       color: #111827;
     }
 
-    header {
+    .container {
+      width: 92%;
+      max-width: 850px;
+      margin: 30px auto;
+    }
+
+    .header {
       background: #111827;
       color: white;
-      padding: 18px;
+      padding: 22px;
+      border-radius: 14px;
+      margin-bottom: 20px;
       text-align: center;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
+    .header h1 {
+      margin: 0 0 8px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 900px;
-      margin: 25px auto;
-      padding: 0 15px;
+    .header p {
+      margin: 0;
+      color: #d1d5db;
     }
 
     .card {
       background: white;
+      padding: 22px;
       border-radius: 14px;
-      padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 3px 15px rgba(0,0,0,.08);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
     }
 
     h2 {
@@ -51,18 +59,18 @@
 
     label {
       display: block;
-      font-weight: bold;
       margin-top: 14px;
       margin-bottom: 6px;
+      font-weight: bold;
     }
 
     input,
     textarea {
       width: 100%;
-      padding: 12px;
+      padding: 13px;
       border: 1px solid #d1d5db;
       border-radius: 9px;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     textarea {
@@ -71,32 +79,29 @@
     }
 
     button {
-      border: 0;
+      border: none;
       border-radius: 9px;
-      padding: 12px 16px;
-      font-size: 16px;
+      padding: 13px 17px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 14px;
-      background: #111827;
-      color: white;
+      margin-top: 12px;
     }
 
-    button:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
-
-    .secondary {
+    .primary {
+      width: 100%;
       background: #2563eb;
+      color: white;
     }
 
     .success {
       background: #16a34a;
+      color: white;
     }
 
-    .logout {
-      background: #6b7280;
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
     }
 
     .danger-button {
@@ -112,67 +117,35 @@
       box-shadow: 0 4px 0 #991b1b;
     }
 
-    .danger-button:hover {
-      background: #b91c1c;
-    }
-
     .danger-button:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #991b1b;
+      box-shadow: none;
+      transform: translateY(4px);
     }
 
     .hidden {
-      display: none !important;
+      display: none;
     }
 
     .message {
+      margin-top: 14px;
       padding: 12px;
       border-radius: 8px;
-      margin-top: 15px;
-      background: #eef2ff;
-    }
-
-    .error {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .success-box {
-      background: #dcfce7;
-      color: #166534;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 15px;
-    }
-
-    .shop-link {
-      word-break: break-all;
-      background: #f3f4f6;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-
-    .small {
-      font-size: 14px;
-      color: #6b7280;
+      display: none;
     }
 
     .product {
       border: 1px solid #e5e7eb;
       border-radius: 12px;
       padding: 15px;
-      margin-top: 15px;
+      margin-bottom: 15px;
     }
 
     .product img {
       width: 100%;
-      max-width: 220px;
-      height: 180px;
+      max-height: 230px;
       object-fit: cover;
       border-radius: 10px;
-      display: block;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .product h3 {
@@ -180,173 +153,230 @@
     }
 
     .price {
-      font-weight: bold;
       font-size: 18px;
-      margin: 6px 0;
+      font-weight: bold;
+      margin: 7px 0;
     }
 
-    .product-actions {
+    .product-buttons {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
 
-    .product-actions button {
-      margin-top: 8px;
+    .product-buttons button {
+      flex: 1;
+      min-width: 120px;
     }
 
-    .edit {
-      background: #2563eb;
+    .shop-link {
+      background: #f3f4f6;
+      padding: 12px;
+      border-radius: 8px;
+      word-break: break-all;
+      margin-top: 10px;
     }
 
-    .delete {
-      background: #dc2626;
+    .notice {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      padding: 13px;
+      border-radius: 9px;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .admin-notice {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 13px;
+      border-radius: 9px;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      text-align: center;
+      color: #6b7280;
+      padding: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 94%;
+        margin: 15px auto;
+      }
+
+      .card {
+        padding: 17px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  <h1>ShopLink Ghana</h1>
-</header>
-
 <div class="container">
 
-  <!-- LOGIN / CREATE -->
+  <div class="header">
+    <h1>🛍️ ShopLink Ghana</h1>
+    <p>Seller Dashboard</p>
+  </div>
 
-  <div id="authSection">
+  <!-- =====================================================
+       SELLER LOGIN
+  ====================================================== -->
 
-    <div class="card">
+  <div id="loginSection" class="card">
 
-      <h2>Seller Login</h2>
+    <h2>🔐 Seller Login</h2>
 
-      <label for="loginSlug">
-        Shop slug
-      </label>
-
-      <input
-        id="loginSlug"
-        type="text"
-        placeholder="accra-style-hub"
-        autocomplete="username"
-      >
-
-      <label for="loginPassword">
-        Password
-      </label>
-
-      <input
-        id="loginPassword"
-        type="password"
-        placeholder="Enter your password"
-        autocomplete="current-password"
-      >
-
-      <button
-        id="loginBtn"
-        class="secondary"
-        type="button"
-      >
-        Login
-      </button>
-
-      <div id="loginMessage"></div>
-
+    <div class="notice">
+      Shop creation is handled by ShopLink Ghana.
+      If you want a shop, contact us and we will create it
+      for you.
     </div>
 
+    <label for="loginSlug">
+      Shop Name / Slug
+    </label>
 
-    <div class="card">
+    <input
+      id="loginSlug"
+      type="text"
+      placeholder="example: accra-style-hub"
+    >
 
-      <h2>Create a New Shop</h2>
+    <label for="loginPassword">
+      Password
+    </label>
 
-      <label for="createName">
-        Business name
-      </label>
+    <input
+      id="loginPassword"
+      type="password"
+      placeholder="Your shop password"
+    >
 
-      <input
-        id="createName"
-        type="text"
-        placeholder="Accra Style Hub"
-      >
+    <button
+      id="loginBtn"
+      class="primary"
+      type="button"
+    >
+      🔐 Login
+    </button>
 
-      <label for="createWhatsapp">
-        WhatsApp number
-      </label>
-
-      <input
-        id="createWhatsapp"
-        type="text"
-        placeholder="233XXXXXXXXX"
-      >
-
-      <label for="createLocation">
-        Location
-      </label>
-
-      <input
-        id="createLocation"
-        type="text"
-        placeholder="Accra, Ghana"
-      >
-
-      <label for="createHours">
-        Opening hours
-      </label>
-
-      <input
-        id="createHours"
-        type="text"
-        placeholder="Mon-Sat, 9 AM-7 PM"
-      >
-
-      <label for="createDescription">
-        Description
-      </label>
-
-      <textarea
-        id="createDescription"
-        placeholder="Tell customers about your business"
-      ></textarea>
-
-      <label for="createPassword">
-        Password
-      </label>
-
-      <input
-        id="createPassword"
-        type="password"
-        placeholder="At least 6 characters"
-        autocomplete="new-password"
-      >
-
-      <label for="confirmPassword">
-        Confirm password
-      </label>
-
-      <input
-        id="confirmPassword"
-        type="password"
-        placeholder="Enter password again"
-        autocomplete="new-password"
-      >
-
-      <button
-        id="createBtn"
-        class="success"
-        type="button"
-      >
-        Create Shop
-      </button>
-
-      <div id="createMessage"></div>
-
-    </div>
+    <div
+      id="loginMessage"
+      class="message"
+    ></div>
 
   </div>
 
 
-  <!-- DASHBOARD -->
+  <!-- =====================================================
+       ADMIN PANEL
+  ====================================================== -->
+
+  <div id="adminSection" class="card">
+
+    <h2>👑 ShopLink Admin</h2>
+
+    <div class="admin-notice">
+      This area is for the ShopLink Ghana owner.
+      Use your admin password to create shops for customers.
+      Never give customers your admin password.
+    </div>
+
+    <label for="adminPassword">
+      Admin Password
+    </label>
+
+    <input
+      id="adminPassword"
+      type="password"
+      placeholder="Your admin password"
+    >
+
+    <label for="adminShopName">
+      Customer Shop Name
+    </label>
+
+    <input
+      id="adminShopName"
+      type="text"
+      placeholder="Example: Accra Fashion Store"
+    >
+
+    <label for="adminWhatsapp">
+      WhatsApp Number
+    </label>
+
+    <input
+      id="adminWhatsapp"
+      type="text"
+      placeholder="233XXXXXXXXX"
+    >
+
+    <label for="adminLocation">
+      Location
+    </label>
+
+    <input
+      id="adminLocation"
+      type="text"
+      value="Ghana"
+    >
+
+    <label for="adminHours">
+      Business Hours
+    </label>
+
+    <input
+      id="adminHours"
+      type="text"
+      value="Mon-Sat, 9 AM-7 PM"
+    >
+
+    <label for="adminDescription">
+      Shop Description
+    </label>
+
+    <textarea
+      id="adminDescription"
+      placeholder="Tell customers about this business"
+    ></textarea>
+
+    <label for="adminSellerPassword">
+      Seller Login Password
+    </label>
+
+    <input
+      id="adminSellerPassword"
+      type="password"
+      placeholder="At least 6 characters"
+    >
+
+    <button
+      id="createShopBtn"
+      class="primary"
+      type="button"
+    >
+      ➕ Create Customer Shop
+    </button>
+
+    <div
+      id="adminMessage"
+      class="message"
+    ></div>
+
+  </div>
+
+
+  <!-- =====================================================
+       DASHBOARD
+  ====================================================== -->
 
   <div
     id="dashboardSection"
@@ -356,23 +386,15 @@
     <div class="card">
 
       <h2 id="businessName">
-        Seller Dashboard
+        My Shop
       </h2>
 
-      <p>
-        <strong>Shop:</strong>
-        <span id="businessSlug"></span>
-      </p>
-
-      <p>
-        <strong>WhatsApp:</strong>
-        <span id="businessWhatsapp"></span>
-      </p>
+      <p id="businessDescription"></p>
 
       <div class="shop-link">
-        <strong>Your shop link:</strong>
+        <strong>Shop Link:</strong>
         <br>
-        <span id="shopUrl"></span>
+        <span id="shopLinkText"></span>
       </div>
 
       <button
@@ -391,23 +413,17 @@
         🛍️ Open My Shop
       </button>
 
-      <button
-        id="logoutBtn"
-        class="logout"
-        type="button"
-      >
-        Logout
-      </button>
-
     </div>
 
 
-    <!-- PRODUCT FORM -->
+    <!-- ===================================================
+         ADD / EDIT PRODUCT
+    ==================================================== -->
 
     <div class="card">
 
       <h2 id="productFormTitle">
-        Add Product
+        ➕ Add Product
       </h2>
 
       <input
@@ -416,13 +432,13 @@
       >
 
       <label for="productName">
-        Product name
+        Product Name
       </label>
 
       <input
         id="productName"
         type="text"
-        placeholder="Premium Sneakers"
+        placeholder="Example: Premium Sneakers"
       >
 
       <label for="productPrice">
@@ -443,8 +459,8 @@
 
       <input
         id="productImage"
-        type="url"
-        placeholder="https://images.unsplash.com/..."
+        type="text"
+        placeholder="https://..."
       >
 
       <label for="productDescription">
@@ -453,53 +469,59 @@
 
       <textarea
         id="productDescription"
-        placeholder="Describe your product"
+        placeholder="Describe the product"
       ></textarea>
 
       <button
         id="saveProductBtn"
-        class="success"
+        class="primary"
         type="button"
       >
-        Add Product
+        ➕ Add Product
       </button>
 
       <button
         id="cancelEditBtn"
-        class="logout hidden"
+        class="secondary hidden"
         type="button"
       >
         Cancel Edit
       </button>
 
-      <div id="productMessage"></div>
+      <div
+        id="productMessage"
+        class="message"
+      ></div>
 
     </div>
 
 
-    <!-- PRODUCTS -->
+    <!-- ===================================================
+         PRODUCTS
+    ==================================================== -->
 
     <div class="card">
 
-      <h2>Your Products</h2>
+      <h2>📦 My Products</h2>
 
-      <div id="productsList">
-        Loading products...
-      </div>
+      <div id="productsList"></div>
 
     </div>
 
 
-    <!-- DANGER ZONE -->
+    <!-- ===================================================
+         LOGOUT / DELETE
+    ==================================================== -->
 
     <div class="card">
 
-      <h2>Danger Zone</h2>
-
-      <p class="small">
-        Deleting your shop permanently removes the shop
-        and all of its products. This action cannot be undone.
-      </p>
+      <button
+        id="logoutBtn"
+        class="secondary"
+        type="button"
+      >
+        🚪 Logout
+      </button>
 
       <button
         id="deleteShopBtn"
@@ -517,184 +539,130 @@
 
 
 <script>
+
   let token = "";
   let currentBusiness = null;
+  let products = [];
 
-  const authSection =
-    document.getElementById("authSection");
+
+  /* =====================================================
+     DOM
+  ====================================================== */
+
+  const loginSection =
+    document.getElementById(
+      "loginSection"
+    );
 
   const dashboardSection =
-    document.getElementById("dashboardSection");
-
-
-  const loginSlug =
-    document.getElementById("loginSlug");
-
-  const loginPassword =
-    document.getElementById("loginPassword");
+    document.getElementById(
+      "dashboardSection"
+    );
 
   const loginBtn =
-    document.getElementById("loginBtn");
+    document.getElementById(
+      "loginBtn"
+    );
 
   const loginMessage =
-    document.getElementById("loginMessage");
+    document.getElementById(
+      "loginMessage"
+    );
 
+  const createShopBtn =
+    document.getElementById(
+      "createShopBtn"
+    );
 
-  const createName =
-    document.getElementById("createName");
-
-  const createWhatsapp =
-    document.getElementById("createWhatsapp");
-
-  const createLocation =
-    document.getElementById("createLocation");
-
-  const createHours =
-    document.getElementById("createHours");
-
-  const createDescription =
-    document.getElementById("createDescription");
-
-  const createPassword =
-    document.getElementById("createPassword");
-
-  const confirmPassword =
-    document.getElementById("confirmPassword");
-
-  const createBtn =
-    document.getElementById("createBtn");
-
-  const createMessage =
-    document.getElementById("createMessage");
-
-
-  const businessName =
-    document.getElementById("businessName");
-
-  const businessSlug =
-    document.getElementById("businessSlug");
-
-  const businessWhatsapp =
-    document.getElementById("businessWhatsapp");
-
-  const shopUrl =
-    document.getElementById("shopUrl");
-
-
-  const copyLinkBtn =
-    document.getElementById("copyLinkBtn");
-
-  const openShopBtn =
-    document.getElementById("openShopBtn");
-
-  const logoutBtn =
-    document.getElementById("logoutBtn");
-
-
-  const productFormTitle =
-    document.getElementById("productFormTitle");
-
-  const editingProductId =
-    document.getElementById("editingProductId");
-
-  const productName =
-    document.getElementById("productName");
-
-  const productPrice =
-    document.getElementById("productPrice");
-
-  const productImage =
-    document.getElementById("productImage");
-
-  const productDescription =
-    document.getElementById("productDescription");
-
-  const saveProductBtn =
-    document.getElementById("saveProductBtn");
-
-  const cancelEditBtn =
-    document.getElementById("cancelEditBtn");
+  const adminMessage =
+    document.getElementById(
+      "adminMessage"
+    );
 
   const productMessage =
-    document.getElementById("productMessage");
+    document.getElementById(
+      "productMessage"
+    );
+
+  const saveProductBtn =
+    document.getElementById(
+      "saveProductBtn"
+    );
+
+  const cancelEditBtn =
+    document.getElementById(
+      "cancelEditBtn"
+    );
 
   const productsList =
-    document.getElementById("productsList");
+    document.getElementById(
+      "productsList"
+    );
 
+  const copyLinkBtn =
+    document.getElementById(
+      "copyLinkBtn"
+    );
+
+  const openShopBtn =
+    document.getElementById(
+      "openShopBtn"
+    );
+
+  const logoutBtn =
+    document.getElementById(
+      "logoutBtn"
+    );
 
   const deleteShopBtn =
-    document.getElementById("deleteShopBtn");
+    document.getElementById(
+      "deleteShopBtn"
+    );
 
 
-  /* -----------------------------
-     HELPERS
-  ----------------------------- */
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
+  /* =====================================================
+     MESSAGE
+  ====================================================== */
 
   function showMessage(
     element,
     message,
-    isError = false
+    success = false
   ) {
-    element.innerHTML =
-      '<div class="message ' +
-      (isError ? "error" : "") +
-      '">' +
-      escapeHtml(message) +
-      "</div>";
+    element.textContent = message;
+    element.style.display = "block";
+
+    if (success) {
+      element.style.background = "#dcfce7";
+      element.style.color = "#166534";
+    } else {
+      element.style.background = "#fee2e2";
+      element.style.color = "#991b1b";
+    }
   }
 
 
-  function clearProductForm() {
-    editingProductId.value = "";
-
-    productName.value = "";
-    productPrice.value = "";
-    productImage.value = "";
-    productDescription.value = "";
-
-    productFormTitle.textContent =
-      "Add Product";
-
-    saveProductBtn.textContent =
-      "Add Product";
-
-    cancelEditBtn.classList.add("hidden");
-
-    productMessage.innerHTML = "";
-  }
-
-
-  /* -----------------------------
+  /* =====================================================
      LOGIN
-  ----------------------------- */
+  ====================================================== */
 
   async function login() {
 
     const slug =
-      loginSlug.value.trim().toLowerCase();
+      document.getElementById(
+        "loginSlug"
+      ).value.trim();
 
     const password =
-      loginPassword.value;
-
-    loginMessage.innerHTML = "";
+      document.getElementById(
+        "loginPassword"
+      ).value;
 
     if (!slug || !password) {
       showMessage(
         loginMessage,
-        "Please enter your shop slug and password.",
-        true
+        "Please enter your shop name and password."
       );
-
       return;
     }
 
@@ -703,505 +671,454 @@
 
     try {
 
-      const response = await fetch(
-        "/api/login",
-        {
+      const response =
+        await fetch("/api/login", {
           method: "POST",
-
           headers: {
             "Content-Type":
               "application/json"
           },
-
           body: JSON.stringify({
-            slug: slug,
-            password: password
+            slug,
+            password
           })
-        }
-      );
+        });
 
       const data =
         await response.json();
 
       if (!response.ok) {
-
         showMessage(
           loginMessage,
           data.error ||
-            "Incorrect shop or password.",
-          true
+            "Login failed."
         );
+
+        loginBtn.disabled = false;
+        loginBtn.textContent =
+          "🔐 Login";
 
         return;
       }
 
       token = data.token;
-      currentBusiness = data.business;
+      currentBusiness =
+        data.business;
 
-      showDashboard();
-
-      await loadProducts();
-
-    } catch (error) {
-
-      console.error(
-        "Login error:",
-        error
-      );
-
-      showMessage(
-        loginMessage,
-        "Could not connect to ShopLink Ghana.",
-        true
-      );
-
-    } finally {
-
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Login";
-    }
-  }
-
-
-  /* -----------------------------
-     CREATE SHOP
-  ----------------------------- */
-
-  async function createShop() {
-
-    const name =
-      createName.value.trim();
-
-    const whatsapp =
-      createWhatsapp.value.trim();
-
-    const location =
-      createLocation.value.trim();
-
-    const hours =
-      createHours.value.trim();
-
-    const description =
-      createDescription.value.trim();
-
-    const password =
-      createPassword.value;
-
-    const confirmation =
-      confirmPassword.value;
-
-
-    if (!name || !whatsapp || !password) {
-
-      showMessage(
-        createMessage,
-        "Business name, WhatsApp number and password are required.",
-        true
-      );
-
-      return;
-    }
-
-
-    if (password.length < 6) {
-
-      showMessage(
-        createMessage,
-        "Password must be at least 6 characters.",
-        true
-      );
-
-      return;
-    }
-
-
-    if (password !== confirmation) {
-
-      showMessage(
-        createMessage,
-        "Passwords do not match.",
-        true
-      );
-
-      return;
-    }
-
-
-    createBtn.disabled = true;
-    createBtn.textContent =
-      "Creating...";
-
-
-    try {
-
-      const response = await fetch(
-        "/api/businesses",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body: JSON.stringify({
-            name,
-            whatsapp,
-            location,
-            hours,
-            description,
-            password
-          })
-        }
-      );
-
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-
-        showMessage(
-          createMessage,
-          data.error ||
-            "Could not create shop.",
-          true
-        );
-
-        return;
-      }
-
-
-      const fullShopUrl =
-        window.location.origin +
-        data.shopUrl;
-
-
-      createMessage.innerHTML =
-        '<div class="success-box">' +
-        "<strong>Shop created successfully!</strong><br><br>" +
-        "Shop slug: <strong>" +
-        escapeHtml(
-          data.business.slug
-        ) +
-        "</strong><br><br>" +
-        "Shop link:<br>" +
-        escapeHtml(
-          fullShopUrl
-        ) +
-        "<br><br>" +
-        "Now log in above using the password you created." +
-        "</div>";
-
-
-      loginSlug.value =
-        data.business.slug;
-
-      loginPassword.value = "";
-
-      createPassword.value = "";
-      confirmPassword.value = "";
+      await loadDashboard();
 
     } catch (error) {
 
       console.error(error);
 
       showMessage(
-        createMessage,
-        "Could not connect to the server.",
-        true
+        loginMessage,
+        "Something went wrong. Please try again."
       );
 
-    } finally {
-
-      createBtn.disabled = false;
-      createBtn.textContent =
-        "Create Shop";
+      loginBtn.disabled = false;
+      loginBtn.textContent =
+        "🔐 Login";
     }
   }
 
 
-  /* -----------------------------
-     DASHBOARD
-  ----------------------------- */
+  /* =====================================================
+     LOAD DASHBOARD
+  ====================================================== */
 
-  function showDashboard() {
+  async function loadDashboard() {
 
-    authSection.classList.add(
-      "hidden"
-    );
+    try {
 
-    dashboardSection.classList.remove(
-      "hidden"
-    );
+      const response =
+        await fetch("/api/me", {
+          headers: {
+            Authorization:
+              "Bearer " + token
+          }
+        });
 
-    businessName.textContent =
-      currentBusiness.name;
+      const data =
+        await response.json();
 
-    businessSlug.textContent =
-      currentBusiness.slug;
+      if (!response.ok) {
+        alert(
+          data.error ||
+            "Could not load dashboard."
+        );
 
-    businessWhatsapp.textContent =
-      currentBusiness.whatsapp;
+        logout();
+        return;
+      }
 
+      currentBusiness =
+        data.business;
 
-    const fullUrl =
-      window.location.origin +
-      "/shop/" +
-      currentBusiness.slug;
+      products =
+        data.products || [];
 
-    shopUrl.textContent =
-      fullUrl;
+      loginSection.classList.add(
+        "hidden"
+      );
+
+      dashboardSection.classList.remove(
+        "hidden"
+      );
+
+      document.getElementById(
+        "businessName"
+      ).textContent =
+        currentBusiness.name;
+
+      document.getElementById(
+        "businessDescription"
+      ).textContent =
+        currentBusiness.description ||
+        "";
+
+      const shopUrl =
+        window.location.origin +
+        "/shop/" +
+        currentBusiness.slug;
+
+      document.getElementById(
+        "shopLinkText"
+      ).textContent =
+        shopUrl;
+
+      renderProducts();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Could not load dashboard."
+      );
+    }
   }
 
 
-  function logout() {
+  /* =====================================================
+     CREATE CUSTOMER SHOP
+  ====================================================== */
 
-    token = "";
-    currentBusiness = null;
+  async function createCustomerShop() {
 
-    authSection.classList.remove(
-      "hidden"
-    );
+    const adminPassword =
+      document.getElementById(
+        "adminPassword"
+      ).value;
 
-    dashboardSection.classList.add(
-      "hidden"
-    );
+    const name =
+      document.getElementById(
+        "adminShopName"
+      ).value.trim();
 
-    loginPassword.value = "";
+    const whatsapp =
+      document.getElementById(
+        "adminWhatsapp"
+      ).value.trim();
 
-    productsList.innerHTML = "";
-  }
+    const location =
+      document.getElementById(
+        "adminLocation"
+      ).value.trim();
 
+    const hours =
+      document.getElementById(
+        "adminHours"
+      ).value.trim();
 
-  /* -----------------------------
-     LOAD PRODUCTS
-  ----------------------------- */
+    const description =
+      document.getElementById(
+        "adminDescription"
+      ).value.trim();
 
-  async function loadProducts() {
+    const password =
+      document.getElementById(
+        "adminSellerPassword"
+      ).value;
 
-    productsList.textContent =
-      "Loading products...";
+    if (
+      !adminPassword ||
+      !name ||
+      !whatsapp ||
+      !password
+    ) {
+      showMessage(
+        adminMessage,
+        "Please complete the admin password, shop name, WhatsApp number and seller password."
+      );
+      return;
+    }
 
+    if (password.length < 6) {
+      showMessage(
+        adminMessage,
+        "Seller password must be at least 6 characters."
+      );
+      return;
+    }
+
+    createShopBtn.disabled = true;
+    createShopBtn.textContent =
+      "Creating Shop...";
 
     try {
 
       const response =
         await fetch(
-          "/api/me",
+          "/api/admin/businesses",
           {
+            method: "POST",
             headers: {
-              Authorization:
-                "Bearer " + token
-            }
+              "Content-Type":
+                "application/json"
+            },
+            body: JSON.stringify({
+              adminPassword,
+              name,
+              whatsapp,
+              location,
+              hours,
+              description,
+              password
+            })
           }
         );
-
 
       const data =
         await response.json();
 
-
       if (!response.ok) {
-
-        if (response.status === 401) {
-
-          logout();
-
-          showMessage(
-            loginMessage,
-            "Your login expired. Please log in again.",
-            true
-          );
-
-          return;
-        }
-
-
-        productsList.textContent =
+        showMessage(
+          adminMessage,
           data.error ||
-          "Could not load products.";
+            "Could not create shop."
+        );
+
+        createShopBtn.disabled = false;
+        createShopBtn.textContent =
+          "➕ Create Customer Shop";
 
         return;
       }
 
+      const fullShopUrl =
+        window.location.origin +
+        data.shopUrl;
 
-      currentBusiness =
-        data.business;
-
-      renderProducts(
-        data.products || []
+      showMessage(
+        adminMessage,
+        "Shop created successfully! Shop link: " +
+          fullShopUrl,
+        true
       );
+
+      document.getElementById(
+        "adminShopName"
+      ).value = "";
+
+      document.getElementById(
+        "adminWhatsapp"
+      ).value = "";
+
+      document.getElementById(
+        "adminDescription"
+      ).value = "";
+
+      document.getElementById(
+        "adminSellerPassword"
+      ).value = "";
 
     } catch (error) {
 
       console.error(error);
 
-      productsList.textContent =
-        "Could not connect to the server.";
+      showMessage(
+        adminMessage,
+        "Something went wrong while creating the shop."
+      );
+
+    } finally {
+
+      createShopBtn.disabled = false;
+
+      createShopBtn.textContent =
+        "➕ Create Customer Shop";
     }
   }
 
 
-  /* -----------------------------
-     RENDER PRODUCTS
-  ----------------------------- */
+  /* =====================================================
+     SAVE PRODUCT
+  ====================================================== */
 
-  function renderProducts(products) {
+  async function saveProduct() {
 
-    if (!products.length) {
+    const editingId =
+      document.getElementById(
+        "editingProductId"
+      ).value;
 
-      productsList.innerHTML =
-        "<p>You have not added any products yet.</p>";
+    const name =
+      document.getElementById(
+        "productName"
+      ).value.trim();
 
+    const price =
+      document.getElementById(
+        "productPrice"
+      ).value;
+
+    const image =
+      document.getElementById(
+        "productImage"
+      ).value.trim();
+
+    const description =
+      document.getElementById(
+        "productDescription"
+      ).value.trim();
+
+    if (!name || price === "") {
+      showMessage(
+        productMessage,
+        "Please enter a product name and price."
+      );
       return;
     }
 
+    saveProductBtn.disabled = true;
+    saveProductBtn.textContent =
+      editingId
+        ? "Saving Changes..."
+        : "Adding Product...";
 
-    productsList.innerHTML =
-      products.map(product => {
+    try {
 
-        const image =
-          product.image ||
-          "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80";
+      const url =
+        editingId
+          ? "/api/products/" + editingId
+          : "/api/products";
 
+      const method =
+        editingId
+          ? "PUT"
+          : "POST";
 
-        return `
-          <div class="product">
+      const response =
+        await fetch(url, {
+          method,
+          headers: {
+            "Content-Type":
+              "application/json",
+            Authorization:
+              "Bearer " + token
+          },
+          body: JSON.stringify({
+            name,
+            price,
+            image,
+            description
+          })
+        });
 
-            <img
-              src="${escapeHtml(image)}"
-              alt="${escapeHtml(product.name)}"
-              onerror="this.style.display='none'"
-            >
+      const data =
+        await response.json();
 
-            <h3>
-              ${escapeHtml(product.name)}
-            </h3>
+      if (!response.ok) {
 
-            <div class="price">
-              GH₵${Number(product.price).toFixed(2)}
-            </div>
-
-            <p>
-              ${escapeHtml(
-                product.description || ""
-              )}
-            </p>
-
-            <div class="product-actions">
-
-              <button
-                class="edit"
-                type="button"
-                data-edit-id="${escapeHtml(product.id)}"
-              >
-                ✏️ Edit
-              </button>
-
-              <button
-                class="delete"
-                type="button"
-                data-delete-id="${escapeHtml(product.id)}"
-              >
-                🗑️ Delete
-              </button>
-
-            </div>
-
-          </div>
-        `;
-
-      }).join("");
-
-
-    document
-      .querySelectorAll("[data-edit-id]")
-      .forEach(button => {
-
-        button.addEventListener(
-          "click",
-          function () {
-
-            const product =
-              products.find(
-                item =>
-                  String(item.id) ===
-                  String(
-                    button.dataset.editId
-                  )
-              );
-
-
-            if (!product) {
-
-              alert(
-                "Product not found."
-              );
-
-              return;
-            }
-
-
-            startEdit(product);
-          }
+        showMessage(
+          productMessage,
+          data.error ||
+            "Could not save product."
         );
 
-      });
+        return;
+      }
 
+      showMessage(
+        productMessage,
+        editingId
+          ? "Product updated successfully."
+          : "Product added successfully.",
+        true
+      );
 
-    document
-      .querySelectorAll("[data-delete-id]")
-      .forEach(button => {
+      clearProductForm();
 
-        button.addEventListener(
-          "click",
-          function () {
+      await loadDashboard();
 
-            deleteProduct(
-              button.dataset.deleteId
-            );
+    } catch (error) {
 
-          }
-        );
+      console.error(error);
 
-      });
+      showMessage(
+        productMessage,
+        "Something went wrong. Please try again."
+      );
+
+    } finally {
+
+      saveProductBtn.disabled = false;
+
+      if (
+        !document.getElementById(
+          "editingProductId"
+        ).value
+      ) {
+        saveProductBtn.textContent =
+          "➕ Add Product";
+      }
+    }
   }
 
 
-  /* -----------------------------
-     START EDIT
-  ----------------------------- */
+  /* =====================================================
+     EDIT PRODUCT
+  ====================================================== */
 
   function startEdit(product) {
 
-    editingProductId.value =
+    document.getElementById(
+      "editingProductId"
+    ).value =
       product.id;
 
-    productName.value =
-      product.name;
+    document.getElementById(
+      "productName"
+    ).value =
+      product.name || "";
 
-    productPrice.value =
-      product.price;
+    document.getElementById(
+      "productPrice"
+    ).value =
+      product.price || "";
 
-    productImage.value =
+    document.getElementById(
+      "productImage"
+    ).value =
       product.image || "";
 
-    productDescription.value =
+    document.getElementById(
+      "productDescription"
+    ).value =
       product.description || "";
 
-
-    productFormTitle.textContent =
-      "Edit Product";
+    document.getElementById(
+      "productFormTitle"
+    ).textContent =
+      "✏️ Edit Product";
 
     saveProductBtn.textContent =
-      "Save Changes";
+      "💾 Save Changes";
 
     cancelEditBtn.classList.remove(
       "hidden"
     );
-
 
     window.scrollTo({
       top: 0,
@@ -1210,166 +1127,71 @@
   }
 
 
-  /* -----------------------------
-     SAVE PRODUCT
-  ----------------------------- */
+  /* =====================================================
+     CLEAR PRODUCT FORM
+  ====================================================== */
 
-  async function saveProduct() {
+  function clearProductForm() {
 
-    const id =
-      editingProductId.value;
+    document.getElementById(
+      "editingProductId"
+    ).value = "";
 
-    const name =
-      productName.value.trim();
+    document.getElementById(
+      "productName"
+    ).value = "";
 
-    const price =
-      productPrice.value;
+    document.getElementById(
+      "productPrice"
+    ).value = "";
 
-    const image =
-      productImage.value.trim();
+    document.getElementById(
+      "productImage"
+    ).value = "";
 
-    const description =
-      productDescription.value.trim();
+    document.getElementById(
+      "productDescription"
+    ).value = "";
 
-
-    if (!name || price === "") {
-
-      showMessage(
-        productMessage,
-        "Product name and price are required.",
-        true
-      );
-
-      return;
-    }
-
-
-    saveProductBtn.disabled = true;
+    document.getElementById(
+      "productFormTitle"
+    ).textContent =
+      "➕ Add Product";
 
     saveProductBtn.textContent =
-      id
-        ? "Saving..."
-        : "Adding...";
+      "➕ Add Product";
 
-
-    try {
-
-      const url =
-        id
-          ? "/api/products/" +
-            encodeURIComponent(id)
-          : "/api/products";
-
-
-      const method =
-        id
-          ? "PUT"
-          : "POST";
-
-
-      const response =
-        await fetch(
-          url,
-          {
-            method,
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                "Bearer " + token
-            },
-
-            body: JSON.stringify({
-              name,
-              price,
-              image,
-              description
-            })
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-
-        showMessage(
-          productMessage,
-          data.error ||
-            "Could not save product.",
-          true
-        );
-
-        return;
-      }
-
-
-      clearProductForm();
-
-      await loadProducts();
-
-
-      showMessage(
-        productMessage,
-        id
-          ? "Product updated successfully."
-          : "Product added successfully."
-      );
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      showMessage(
-        productMessage,
-        "Could not connect to the server.",
-        true
-      );
-
-    } finally {
-
-      saveProductBtn.disabled = false;
-
-      if (!editingProductId.value) {
-
-        saveProductBtn.textContent =
-          "Add Product";
-      }
-    }
+    cancelEditBtn.classList.add(
+      "hidden"
+    );
   }
 
 
-  /* -----------------------------
+  /* =====================================================
      DELETE PRODUCT
-  ----------------------------- */
+  ====================================================== */
 
-  async function deleteProduct(id) {
+  async function deleteProduct(
+    productId
+  ) {
 
     const confirmed =
       confirm(
         "Are you sure you want to delete this product?"
       );
 
-
     if (!confirmed) {
       return;
     }
-
 
     try {
 
       const response =
         await fetch(
           "/api/products/" +
-          encodeURIComponent(id),
+            productId,
           {
             method: "DELETE",
-
             headers: {
               Authorization:
                 "Bearer " + token
@@ -1377,75 +1199,236 @@
           }
         );
 
-
       const data =
         await response.json();
 
-
       if (!response.ok) {
-
         alert(
           data.error ||
-          "Could not delete product."
+            "Could not delete product."
         );
-
         return;
       }
 
-
-      await loadProducts();
+      await loadDashboard();
 
     } catch (error) {
 
       console.error(error);
 
       alert(
-        "Could not connect to the server."
+        "Something went wrong."
       );
     }
   }
 
 
-  /* -----------------------------
+  /* =====================================================
+     RENDER PRODUCTS
+  ====================================================== */
+
+  function renderProducts() {
+
+    productsList.innerHTML = "";
+
+    if (!products.length) {
+
+      productsList.innerHTML =
+        '<div class="empty">' +
+        "No products yet. Add your first product above." +
+        "</div>";
+
+      return;
+    }
+
+    products.forEach(product => {
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+      div.className =
+        "product";
+
+      if (product.image) {
+
+        const img =
+          document.createElement(
+            "img"
+          );
+
+        img.src =
+          product.image;
+
+        img.alt =
+          product.name;
+
+        img.onerror =
+          function () {
+            this.style.display =
+              "none";
+          };
+
+        div.appendChild(img);
+      }
+
+      const title =
+        document.createElement(
+          "h3"
+        );
+
+      title.textContent =
+        product.name;
+
+      div.appendChild(title);
+
+      const price =
+        document.createElement(
+          "div"
+        );
+
+      price.className =
+        "price";
+
+      price.textContent =
+        "GH₵" +
+        Number(product.price)
+          .toFixed(2);
+
+      div.appendChild(price);
+
+      const description =
+        document.createElement(
+          "p"
+        );
+
+      description.textContent =
+        product.description ||
+        "";
+
+      div.appendChild(
+        description
+      );
+
+      const buttons =
+        document.createElement(
+          "div"
+        );
+
+      buttons.className =
+        "product-buttons";
+
+      const editBtn =
+        document.createElement(
+          "button"
+        );
+
+      editBtn.className =
+        "secondary";
+
+      editBtn.type =
+        "button";
+
+      editBtn.textContent =
+        "✏️ Edit";
+
+      editBtn.addEventListener(
+        "click",
+        function () {
+          startEdit(product);
+        }
+      );
+
+      const deleteBtn =
+        document.createElement(
+          "button"
+        );
+
+      deleteBtn.className =
+        "danger-button";
+
+      deleteBtn.type =
+        "button";
+
+      deleteBtn.style.marginTop =
+        "12px";
+
+      deleteBtn.style.padding =
+        "13px 17px";
+
+      deleteBtn.style.boxShadow =
+        "none";
+
+      deleteBtn.textContent =
+        "🗑️ Delete";
+
+      deleteBtn.addEventListener(
+        "click",
+        function () {
+          deleteProduct(
+            product.id
+          );
+        }
+      );
+
+      buttons.appendChild(
+        editBtn
+      );
+
+      buttons.appendChild(
+        deleteBtn
+      );
+
+      div.appendChild(
+        buttons
+      );
+
+      productsList.appendChild(
+        div
+      );
+    });
+  }
+
+
+  /* =====================================================
      COPY SHOP LINK
-  ----------------------------- */
+  ====================================================== */
 
   async function copyShopLink() {
 
-    const url =
-      shopUrl.textContent;
+    if (!currentBusiness) {
+      return;
+    }
 
+    const url =
+      window.location.origin +
+      "/shop/" +
+      currentBusiness.slug;
 
     try {
 
-      await navigator.clipboard
-        .writeText(url);
+      await navigator.clipboard.writeText(
+        url
+      );
 
-
-      copyLinkBtn.textContent =
-        "✅ Link Copied!";
-
-
-      setTimeout(() => {
-
-        copyLinkBtn.textContent =
-          "📋 Copy Shop Link";
-
-      }, 2000);
-
+      alert(
+        "Shop link copied!"
+      );
 
     } catch (error) {
 
-      alert(
-        "Could not copy the shop link."
+      prompt(
+        "Copy your shop link:",
+        url
       );
     }
   }
 
 
-  /* -----------------------------
+  /* =====================================================
      OPEN SHOP
-  ----------------------------- */
+  ====================================================== */
 
   function openShop() {
 
@@ -1458,12 +1441,10 @@
       return;
     }
 
-
     const url =
       window.location.origin +
       "/shop/" +
       currentBusiness.slug;
-
 
     window.open(
       url,
@@ -1472,9 +1453,40 @@
   }
 
 
-  /* -----------------------------
+  /* =====================================================
+     LOGOUT
+  ====================================================== */
+
+  function logout() {
+
+    token = "";
+    currentBusiness = null;
+    products = [];
+
+    dashboardSection.classList.add(
+      "hidden"
+    );
+
+    loginSection.classList.remove(
+      "hidden"
+    );
+
+    document.getElementById(
+      "loginPassword"
+    ).value = "";
+
+    loginBtn.disabled = false;
+
+    loginBtn.textContent =
+      "🔐 Login";
+
+    clearProductForm();
+  }
+
+
+  /* =====================================================
      DELETE SHOP
-  ----------------------------- */
+  ====================================================== */
 
   async function deleteShop() {
 
@@ -1484,11 +1496,9 @@
         "Are you sure you want to delete your shop?"
       );
 
-
     if (!firstConfirm) {
       return;
     }
-
 
     const secondConfirm =
       confirm(
@@ -1501,17 +1511,14 @@
         "Do you really want to continue?"
       );
 
-
     if (!secondConfirm) {
       return;
     }
-
 
     deleteShopBtn.disabled = true;
 
     deleteShopBtn.textContent =
       "Deleting Shop...";
-
 
     try {
 
@@ -1520,7 +1527,6 @@
           "/api/business/me",
           {
             method: "DELETE",
-
             headers: {
               Authorization:
                 "Bearer " + token
@@ -1528,16 +1534,14 @@
           }
         );
 
-
       const data =
         await response.json();
-
 
       if (!response.ok) {
 
         alert(
           data.error ||
-          "Could not delete shop."
+            "Could not delete shop."
         );
 
         deleteShopBtn.disabled =
@@ -1549,15 +1553,12 @@
         return;
       }
 
-
       alert(
         "Your shop has been permanently deleted."
       );
 
-
       token = "";
       currentBusiness = null;
-
 
       window.location.href = "/";
 
@@ -1569,7 +1570,6 @@
         "Something went wrong. Please try again."
       );
 
-
       deleteShopBtn.disabled =
         false;
 
@@ -1579,23 +1579,18 @@
   }
 
 
-  /* -----------------------------
-     BUTTON EVENTS
-  ----------------------------- */
+  /* =====================================================
+     EVENTS
+  ====================================================== */
 
   loginBtn.addEventListener(
     "click",
     login
   );
 
-  createBtn.addEventListener(
+  createShopBtn.addEventListener(
     "click",
-    createShop
-  );
-
-  logoutBtn.addEventListener(
-    "click",
-    logout
+    createCustomerShop
   );
 
   saveProductBtn.addEventListener(
@@ -1618,38 +1613,31 @@
     openShop
   );
 
+  logoutBtn.addEventListener(
+    "click",
+    logout
+  );
+
   deleteShopBtn.addEventListener(
     "click",
     deleteShop
   );
 
 
-  /* -----------------------------
-     ENTER KEY
-  ----------------------------- */
+  /* =====================================================
+     ENTER KEY LOGIN
+  ====================================================== */
 
-  loginPassword.addEventListener(
-    "keydown",
-    event => {
-
-      if (event.key === "Enter") {
-        login();
+  document
+    .getElementById("loginPassword")
+    .addEventListener(
+      "keydown",
+      function (event) {
+        if (event.key === "Enter") {
+          login();
+        }
       }
-
-    }
-  );
-
-
-  createPassword.addEventListener(
-    "keydown",
-    event => {
-
-      if (event.key === "Enter") {
-        createShop();
-      }
-
-    }
-  );
+    );
 
 </script>
 
