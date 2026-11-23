@@ -403,6 +403,41 @@ async function requireAuth(
    PUBLIC SHOP
 ========================================================= */
 
+app.get("/api/businesses", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select(
+        "id,name,slug,whatsapp,location,hours,description,created_at"
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) {
+      console.error("Load businesses error:", error);
+
+      return res.status(500).json({
+        error: "Could not load shops."
+      });
+    }
+
+    return res.json({
+      businesses: data || []
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      error: "Server error while loading shops."
+    });
+  }
+});
+
+
+
+
+
 app.get(
   "/api/business/:slug",
   async (req, res) => {
@@ -1340,6 +1375,15 @@ app.post(
 /* =========================================================
    PAGES
 ========================================================= */
+
+
+app.get("/shops", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "marketplace.html")
+  );
+});
+
+
 
 /*
   Public shop page
