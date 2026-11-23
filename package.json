@@ -1,3 +1,4 @@
+
 {
   "name": "shoplink-ghana-v5",
   "version": "5.0.0",
@@ -10,6 +11,7 @@
     "node": ">=20 <27"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
     "@supabase/supabase-js": "^2.57.0",
     "express": "^5.1.0"
   }
