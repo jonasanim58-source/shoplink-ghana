@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Explore Shops | ShopLink Ghana</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #172033;
+    }
+
+    header {
+      background: #10213d;
+      color: white;
+      padding: 18px 5%;
+    }
+
+    .nav {
+      max-width: 1150px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .logo {
+      color: white;
+      font-size: 23px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 18px;
+      font-size: 14px;
+    }
+
+    .hero {
+      background: #10213d;
+      color: white;
+      padding: 55px 20px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(30px, 5vw, 45px);
+      margin: 10px 0;
+    }
+
+    .hero p {
+      color: #d6deeb;
+      max-width: 600px;
+      margin: auto;
+      line-height: 1.7;
+    }
+
+    .container {
+      max-width: 1150px;
+      margin: 35px auto;
+      padding: 0 18px;
+    }
+
+    .search {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid #d8deea;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 25px;
+      background: white;
+    }
+
+    .heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .heading h2 {
+      font-size: 25px;
+    }
+
+    #shopCount {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .shops-grid {
+      display: grid;
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(240px, 1fr)
+      );
+      gap: 20px;
+    }
+
+    .shop-card {
+      background: white;
+      border: 1px solid #e4e9f1;
+      border-radius: 15px;
+      padding: 23px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.04);
+      display: flex;
+      flex-direction: column;
+      min-height: 240px;
+    }
+
+    .shop-icon {
+      width: 55px;
+      height: 55px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: #fff1d6;
+      font-size: 27px;
+      margin-bottom: 15px;
+    }
+
+    .shop-card h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .location {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .description {
+      color: #526071;
+      line-height: 1.6;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .view-button {
+      display: block;
+      text-align: center;
+      background: #f5a900;
+      color: #10213d;
+      padding: 13px;
+      border-radius: 9px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .view-button:hover {
+      background: #e69b00;
+    }
+
+    .status {
+      text-align: center;
+      padding: 35px 15px;
+      background: white;
+      border-radius: 12px;
+      color: #64748b;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding: 30px 15px;
+      text-align: center;
+      background: #10213d;
+      color: white;
+    }
+
+    footer a {
+      color: #ffc247;
+    }
+
+    @media(max-width: 600px) {
+      .nav {
+        flex-direction: column;
+      }
+
+      nav a {
+        margin: 0 7px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="nav">
+    <a href="/" class="logo">ShopLink Ghana</a>
+
+    <nav>
+      <a href="/">Home</a>
+      <a href="/seller">Seller Login</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>Discover Amazing Shops 🇬🇭</h1>
+
+  <p>
+    Explore Ghanaian businesses, discover amazing products
+    and shop directly from sellers through WhatsApp.
+    Your next favourite shop could be right here.
+  </p>
+</section>
+
+<main class="container">
+
+  <div class="heading">
+    <h2>Explore Businesses</h2>
+    <span id="shopCount">Loading shops...</span>
+  </div>
+
+  <input
+    id="searchInput"
+    class="search"
+    type="search"
+    placeholder="🔍 Search shops by name, location or description..."
+  >
+
+  <div id="shopsGrid" class="shops-grid"></div>
+
+  <div id="status" class="status">
+    Loading ShopLink businesses...
+  </div>
+
+</main>
+
+<footer>
+  <h3>ShopLink Ghana</h3>
+  <p>Your products. More customers. Bigger dreams.</p>
+  <a href="/">Visit Homepage</a>
+</footer>
+
+<script>
+
+  let allShops = [];
+
+  const shopsGrid =
+    document.getElementById("shopsGrid");
+
+  const searchInput =
+    document.getElementById("searchInput");
+
+  const status =
+    document.getElementById("status");
+
+  const shopCount =
+    document.getElementById("shopCount");
+
+
+  async function loadShops() {
+
+    try {
+
+      const response =
+        await fetch("/api/businesses");
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Could not load shops."
+        );
+      }
+
+      allShops = data.businesses || [];
+
+      shopCount.textContent =
+        allShops.length + " shops available";
+
+      renderShops(allShops);
+
+    } catch (error) {
+
+      console.error(error);
+
+      status.style.display = "block";
+
+      status.textContent =
+        "We couldn't load shops right now. Please refresh the page.";
+
+      shopCount.textContent =
+        "Unable to load shops";
+    }
+  }
+
+
+  function renderShops(shops) {
+
+    shopsGrid.innerHTML = "";
+
+    if (!shops.length) {
+
+      status.style.display = "block";
+
+      status.textContent =
+        allShops.length
+          ? "No shops match your search. Try another name or location."
+          : "No businesses have joined ShopLink Ghana yet. Check back soon!";
+
+      return;
+    }
+
+    status.style.display = "none";
+
+    shops.forEach(shop => {
+
+      const card =
+        document.createElement("article");
+
+      card.className = "shop-card";
+
+      const icon =
+        document.createElement("div");
+
+      icon.className = "shop-icon";
+      icon.textContent = "🏪";
+
+      const name =
+        document.createElement("h3");
+
+      name.textContent = shop.name;
+
+      const location =
+        document.createElement("div");
+
+      location.className = "location";
+      location.textContent =
+        "📍 " + (shop.location || "Ghana");
+
+      const description =
+        document.createElement("p");
+
+      description.className = "description";
+      description.textContent =
+        shop.description ||
+        "Discover products and shop directly from this business.";
+
+      const link =
+        document.createElement("a");
+
+      link.className = "view-button";
+      link.textContent = "Visit Shop →";
+      link.href =
+        "/shop/" + encodeURIComponent(shop.slug);
+
+      card.append(
+        icon,
+        name,
+        location,
+        description,
+        link
+      );
+
+      shopsGrid.appendChild(card);
+
+    });
+
+  }
+
+
+  searchInput.addEventListener(
+    "input",
+    function () {
+
+      const query =
+        this.value.toLowerCase().trim();
+
+      const filtered =
+        allShops.filter(shop => {
+
+          const searchable = [
+            shop.name,
+            shop.location,
+            shop.description
+          ].join(" ").toLowerCase();
+
+          return searchable.includes(query);
+        });
+
+      shopCount.textContent =
+        filtered.length + " shops found";
+
+      renderShops(filtered);
+
+    }
+  );
+
+
+  loadShops();
+
+</script>
+
+</body>
+</html>
