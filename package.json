@@ -1,18 +1,17 @@
-
 {
-  "name": "shoplink-ghana-v5",
-  "version": "5.0.0",
-  "description": "ShopLink Ghana WhatsApp commerce platform",
+  "name": "shoplink-ghana",
+  "version": "1.0.0",
+  "description": "WhatsApp-first digital shop builder for Ghanaian businesses",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "engines": {
-    "node": ">=20 <27"
+    "node": ">=20"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.0.0",
-    "@supabase/supabase-js": "^2.57.0",
+    "@aws-sdk/client-s3": "^3.1175.0",
+    "@supabase/supabase-js": "^2.119.2",
     "express": "^5.1.0"
   }
 }
