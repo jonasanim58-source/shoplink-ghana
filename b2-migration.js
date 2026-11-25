@@ -234,4 +234,45 @@ module.exports = function registerB2Migration(app) {
       });
     }
   });
+
+  /* PROTECTED B2 DATABASE INITIALIZATION */
+  app.post("/api/admin/initialize-b2-store", async (req, res) => {
+    try {
+      const authorization = req.headers.authorization || "";
+      const suppliedToken = authorization.startsWith("Bearer ")
+        ? authorization.slice(7)
+        : "";
+
+      if (!safeCompare(
+        suppliedToken,
+        process.env.B2_MIGRATION_TOKEN
+      )) {
+        return res.status(401).json({
+          error: "Unauthorized."
+        });
+      }
+
+      const createB2Store = require("./b2-store");
+      const store = createB2Store();
+
+      const database = await store.initialize();
+
+      return res.json({
+        ok: true,
+        initialized: true,
+        businesses: database.businesses.length,
+        products: database.products.length,
+        databaseFile: "data/shoplink-ghana-database.json",
+        message: "B2 database initialized and verified. Supabase was not changed."
+      });
+
+    } catch (error) {
+      console.error("B2 initialization error:", error);
+
+      return res.status(500).json({
+        error: "B2 initialization failed. Check server logs."
+      });
+    }
+  });
+
 };
