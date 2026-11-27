@@ -56,10 +56,9 @@ if (
    SUPABASE
 ========================================================= */
 
-const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY
-);
+const DATA_STORE = process.env.DATA_STORE || "supabase";
+
+let supabase;
 
 /* =========================================================
    EXPRESS
@@ -1195,12 +1194,28 @@ app.delete(
   requireAuth,
   async (req, res) => {
     try {
-      /*
-        This assumes your Supabase database has
-        ON DELETE CASCADE configured from products.business_id
-        to businesses.id.
+      if (DATA_STORE === "b2") {
+        const deleted =
+          await supabase.deleteBusinessAndProducts(
+            req.businessId
+          );
 
-        If it does not, we delete products first.
+        if (!deleted) {
+          return res.status(500).json({
+            error: "Could not delete shop."
+          });
+        }
+
+        return res.json({
+          ok: true,
+          message:
+            "Shop and all products deleted successfully."
+        });
+      }
+
+      /*
+        Supabase deletion: delete products first,
+        then delete the business.
       */
 
       const {
@@ -1451,11 +1466,48 @@ app.use(
    START SERVER
 ========================================================= */
 
-app.listen(
-  PORT,
-  () => {
+async function startServer() {
+  if (DATA_STORE === "b2") {
+    const createB2Store = require("./b2-store");
+    const createB2SupabaseAdapter =
+      require("./b2-supabase-adapter");
+
+    const b2Store = createB2Store();
+
+    await b2Store.initialize();
+
+    supabase = createB2SupabaseAdapter(b2Store);
+
+    console.log(
+      "ShopLink database: Backblaze B2"
+    );
+  } else if (DATA_STORE === "supabase") {
+    supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    console.log(
+      "ShopLink database: Supabase"
+    );
+  } else {
+    throw new Error(
+      "Invalid DATA_STORE. Use supabase or b2."
+    );
+  }
+
+  app.listen(PORT, () => {
     console.log(
       `ShopLink Ghana running on port ${PORT}`
     );
-  }
-);
+  });
+}
+
+startServer().catch(error => {
+  console.error(
+    "ShopLink startup failed:",
+    error
+  );
+
+  process.exit(1);
+});
